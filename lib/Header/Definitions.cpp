@@ -132,7 +132,7 @@ inline bool paddle_status() {
     return !digitalRead(pins::inputs::PADDLE);
 }
 
-inline void setOutput(OuputsPins pin, bool value) {
+inline void setOutput(OutputPins pin, bool value) {
     digitalWrite(pin, value);
 }
 

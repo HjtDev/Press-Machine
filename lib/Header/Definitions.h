@@ -18,16 +18,10 @@
 //  Main Namespace
 namespace pins {
     namespace outputs {
-        // const uint8_t OUTPUT1 = PB0;
-        // const uint8_t OUTPUT2 = PB1;
-        // const uint8_t OUTPUT3 = PB10;
-        // const uint8_t OUTPUT4 = PB11;
-        const uint8_t OUTPUT1 = PB11;
-        const uint8_t OUTPUT2 = PB10;
-        const uint8_t OUTPUT3 = PB1;
-        const uint8_t OUTPUT4 = PB0;
-        const uint8_t BUZZER = PB12;
-        const uint8_t ADC_OUTPUT = PA0;
+        const uint8_t OUTPUT1 = PB12;
+        const uint8_t OUTPUT2 = PB13;
+        const uint8_t OUTPUT3 = PB14;
+        const uint8_t OUTPUT4 = PB15;
     }
     namespace inputs {
         const uint8_t MAIN_SELECTOR_MANUAL = PB9; // 1
@@ -134,13 +128,11 @@ enum TimerSelector {
     TIMER_OFF
 };
 
-enum OuputsPins {
+enum OutputPins {
     UNIT_MOTOR_OUTPUT = pins::outputs::OUTPUT1,
     PUMP_UP_OUTPUT = pins::outputs::OUTPUT2,
     PUMP_DOWN_OUTPUT = pins::outputs::OUTPUT3,
     AIR_CLEANER_OUTPUT = pins::outputs::OUTPUT4,
-    BUZZER_OUTPUT = pins::outputs::BUZZER,
-    ADC_OUTPUT = pins::outputs::ADC_OUTPUT
 };
 
 enum MenuKey {
@@ -163,7 +155,7 @@ enum specialCharacters {
 // Prototypes
 extern LiquidCrystal_I2C* display;
 // Outputs setter
-inline void setOutput(OuputsPins pin, bool value);
+inline void setOutput(OutputPins pin, bool value);
 
 // Inputs & Outputs status
 inline bool air_cleaner_status();
