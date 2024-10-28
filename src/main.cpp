@@ -2,9 +2,9 @@
 #include <Definitions.h>
 
 void setup() {
-    SPI.begin();
-    pinMode(pins::controls::chipSelectPin, OUTPUT);
-    digitalWrite(pins::controls::chipSelectPin, HIGH);
+    // SPI.begin();
+    // pinMode(pins::controls::chipSelectPin, OUTPUT);
+    // digitalWrite(pins::controls::chipSelectPin, HIGH);
 
     pinMode(pins::inputs::MAIN_SELECTOR_MANUAL, INPUT);
     pinMode(pins::inputs::MAIN_SELECTOR_AUTOMATIC, INPUT);
@@ -21,28 +21,24 @@ void setup() {
     pinMode(pins::inputs::PHASE_CONTROL, INPUT);
     pinMode(pins::inputs::PADDLE, INPUT);
     pinMode(pins::inputs::AIR_CLEANER_BUTTON, INPUT);
-    pinMode(pins::inputs::MENU_UP, INPUT);
-    pinMode(pins::inputs::MENU_DOWN, INPUT);
 
-    pinMode(pins::inputs::NTC_INPUT, INPUT_ANALOG);
-    analogReadResolution(12);
+    pinMode(pins::inputs::KEYPAD_DAV, INPUT);
 
-    // pinMode(pins::inputs::MENU_ENTER, INPUT);
-    pinMode(pins::inputs::MENU_NEXT, INPUT);
+    pinMode(pins::inputs::KEYPAD_DATA_A, INPUT);
+    pinMode(pins::inputs::KEYPAD_DATA_B, INPUT);
+    pinMode(pins::inputs::KEYPAD_DATA_C, INPUT);
+    pinMode(pins::inputs::KEYPAD_DATA_D, INPUT);
+
     pinMode(pins::outputs::OUTPUT1, OUTPUT);
     pinMode(pins::outputs::OUTPUT2, OUTPUT);
     pinMode(pins::outputs::OUTPUT3, OUTPUT);
     pinMode(pins::outputs::OUTPUT4, OUTPUT);
-    // display->init();
-    // display->backlight();
-    // display->createChar(specialCharacters::LOADING_START, Icons::LOADING_START);
-    // display->createChar(specialCharacters::LOADING_START_FILLED, Icons::LOADING_START_FILLED);
-    // display->createChar(specialCharacters::LOADING_END, Icons::LOADING_END);
-    // display->createChar(specialCharacters::LOADING_END_FILLED, Icons::LOADING_END_FILLED);
-    // display->setCursor(0, 0);
-    // display->print("Hello");
-    // display->setCursor(0, 1);
-    // display->print("Test");
+    display->init();
+    display->backlight();
+    display->createChar(specialCharacters::LOADING_START, Icons::LOADING_START);
+    display->createChar(specialCharacters::LOADING_START_FILLED, Icons::LOADING_START_FILLED);
+    display->createChar(specialCharacters::LOADING_END, Icons::LOADING_END);
+    display->createChar(specialCharacters::LOADING_END_FILLED, Icons::LOADING_END_FILLED);
     // pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;
     // pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
     // xTaskCreate(task1, "UNIT Motor with control phase", 512, NULL, 1, NULL);
@@ -50,33 +46,14 @@ void setup() {
     // xTaskCreate(task3, "Menu & Shift Register", 512, NULL, 1, NULL);
     // xTaskCreate(air_cleaner, "Air Cleaner", 256, NULL, 1, NULL);
     // vTaskStartScheduler();
-    digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, HIGH);
-    delay(1000);
-    digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, LOW);
 }
 
-void loop() {
-    if(!digitalRead(pins::inputs::PHASE_CONTROL)) {
-        digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, HIGH);
-    } else {
-        digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, LOW);
-    }
-
-    if(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER)) {
-        digitalWrite(OutputPins::PUMP_UP_OUTPUT, HIGH);
-    } else {
-        digitalWrite(OutputPins::PUMP_UP_OUTPUT, LOW);
-    }
-
-    if(!digitalRead(pins::inputs::PADDLE)) {
-        digitalWrite(OutputPins::PUMP_DOWN_OUTPUT, HIGH);
-    } else {
-        digitalWrite(OutputPins::PUMP_DOWN_OUTPUT, LOW);
-    }
-
-    if(!digitalRead(pins::inputs::SENSOR)) {
-        digitalWrite(OutputPins::AIR_CLEANER_OUTPUT, HIGH);
-    } else {
-        digitalWrite(OutputPins::AIR_CLEANER_OUTPUT, LOW);
+void loop() {     
+    readKeypad();
+    delay(100);
+    if(pins::controls::keyPressed) {
+        display->setCursor(0, 1);
+        display->print(pins::controls::keyValue);   
+        pins::controls::keyPressed = false;
     }
 }

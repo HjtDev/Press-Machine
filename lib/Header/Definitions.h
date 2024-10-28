@@ -39,13 +39,13 @@ namespace pins {
         const uint8_t PHASE_CONTROL = PA10; // 12
         const uint8_t HIGHLEVEL_SELECTOR_TIMER = PA9; // 13
         const uint8_t PADDLE = PA8; // 15
-        const uint8_t MENU_DOWN = PB3; // 16
-        const uint8_t MENU_UP = PC15; // 17
-        // const uint8_t MENU_ENTER = PC13; // 18
-        const uint8_t MENU_NEXT = PC14; // 19
         const uint8_t DATA = PB7; // 20
         const uint8_t CLK = PB6; // 21
-        const uint8_t NTC_INPUT = PA3;
+        const uint8_t KEYPAD_DATA_A = PB0;
+        const uint8_t KEYPAD_DATA_B = PB1;
+        const uint8_t KEYPAD_DATA_C = PB2;
+        const uint8_t KEYPAD_DATA_D = PB10;
+        const uint8_t KEYPAD_DAV = PB11;
     }
     namespace controls {
         extern float AIR_CLEANER_TIMER;
@@ -54,7 +54,9 @@ namespace pins {
         extern int8_t menu;
         extern bool air_cleaner;
         extern String status;
-        const uint8_t chipSelectPin = PA4;
+        // const uint8_t chipSelectPin = PA4;
+        extern volatile bool keyPressed;
+        extern volatile char keyValue;
     }
 }
 
@@ -129,7 +131,7 @@ inline bool paddle_status();
 inline MainSelectorStatus main_selector_status();
 inline AutomaticSelectorStatus automatic_selector_status();
 inline TimerSelector timer_selector_status();
-inline MenuKey get_menu_key();
+void readKeypad();
 void update_display();
 
 inline String set_status();
