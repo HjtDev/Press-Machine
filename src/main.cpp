@@ -39,8 +39,10 @@ void setup() {
     display->createChar(specialCharacters::LOADING_START_FILLED, Icons::LOADING_START_FILLED);
     display->createChar(specialCharacters::LOADING_END, Icons::LOADING_END);
     display->createChar(specialCharacters::LOADING_END_FILLED, Icons::LOADING_END_FILLED);
-    // print("Mr.Fotohi", {3, 0}, true, 1);
-    // print("ph: 09133088089", {0, 1}, false, 1000);
+    display->setCursor(0, 0);
+    display->print("Hello");
+    display->setCursor(0, 1);
+    display->print("Test");
     pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;
     pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
     // xTaskCreate(task1, "UNIT Motor with control phase", 512, NULL, 1, NULL);
@@ -51,15 +53,5 @@ void setup() {
 }
 
 void loop() {
-    digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, HIGH);
-    digitalWrite(OutputPins::PUMP_DOWN_OUTPUT, HIGH);
-    digitalWrite(OutputPins::PUMP_UP_OUTPUT, HIGH);
-    digitalWrite(OutputPins::AIR_CLEANER_OUTPUT, HIGH);
-    delay(1000);
-    digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, LOW);
-    digitalWrite(OutputPins::PUMP_DOWN_OUTPUT, LOW);
-    digitalWrite(OutputPins::PUMP_UP_OUTPUT, LOW);
-    digitalWrite(OutputPins::AIR_CLEANER_OUTPUT, LOW);
-    delay(1000);
     // yield();
 }

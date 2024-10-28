@@ -56,50 +56,6 @@ namespace pins {
         extern String status;
         const uint8_t chipSelectPin = PA4;
     }
-    // namespace outputs {
-    // 1- const uint8_t OUTPUT1 = PB11;
-    // 2- const uint8_t OUTPUT2 = PB10;
-    // 3- const uint8_t OUTPUT3 = PB1;
-    // 4- const uint8_t OUTPUT4 = PB0;
-    // 5- const uint8_t BUZZER = PB12;
-    // }
-
-    // namespace inputs {
-    //     const uint8_t MAIN_SELECTOR_MANUAL = PB9; // 1
-    //     const uint8_t MAIN_SELECTOR_AUTOMATIC = PB8; // 2
-    //     const uint8_t AUTO_SELECTOR_PADDLE = PB5; // 3
-    //     const uint8_t AUTO_SELECTOR_AUTOMATIC = PB4; // 4
-    //     const uint8_t MOTOR_START = PB3; // 5
-    //     const uint8_t MOTOR_STOP = PA15; // 6
-    //     const uint8_t PUMP_UP = PA12; // 7
-    //     const uint8_t PUMP_DOWN = PA11; // 8
-    //     const uint8_t AIR_CLEANER_BUTTON = PA2;  // 9
-    //     const uint8_t HIGHLEVEL_MICTORSWITCH = PA10; // 10
-    //     const uint8_t LOWLEVEL_MICTORSWITCH = PA9; // 11
-    //     const uint8_t HIGHLEVEL_SELECTOR_MICROSWITCH = PA8; // 12
-    //     const uint8_t PHASE_CONTROL = PB15; // 13
-    //     const uint8_t HIGHLEVEL_SELECTOR_TIMER = PB14; // 14
-    //     const uint8_t PADDLE = PB13; // 15
-    //     const uint8_t MENU_UP = PA0;
-    //     const uint8_t MENU_DOWN = PC14;
-    //     const uint8_t MENU_ENTER = PC13;
-    //     const uint8_t MENU_NEXT = PC15;
-    //     const uint8_t DATA = PB7; // 19
-    //     const uint8_t CLK = PB6; // 20
-    // }
-    
-    // namespace controls {
-    // 1- extern float AIR_CLEANER_TIMER;
-    // 2- extern float MICROSWITCH_TIMER;
-    // 3- extern bool TIMER_TRIGERED;
-    // 4- extern bool menu;
-    // 5- extern bool air_cleaner;
-    // 6- extern String status;
-    // 7- const uint8_t latch = PA2;
-    // 8- const uint8_t data_pin = PA3;
-    // 9- const uint8_t clock_pin = PA1;
-    // 10- const uint8_t chipSelectPin = PA4;
-    // }
 }
 
 namespace Icons {
