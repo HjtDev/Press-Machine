@@ -10,7 +10,7 @@ void setup() {
     pinMode(pins::inputs::MAIN_SELECTOR_AUTOMATIC, INPUT);
     pinMode(pins::inputs::AUTO_SELECTOR_PADDLE, INPUT);
     pinMode(pins::inputs::AUTO_SELECTOR_AUTOMATIC, INPUT);
-    pinMode(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH, INPUT);
+    pinMode(pins::inputs::SENSOR, INPUT);
     pinMode(pins::inputs::HIGHLEVEL_SELECTOR_TIMER, INPUT);
     pinMode(pins::inputs::MOTOR_START, INPUT);
     pinMode(pins::inputs::MOTOR_STOP, INPUT);
@@ -33,25 +33,50 @@ void setup() {
     pinMode(pins::outputs::OUTPUT2, OUTPUT);
     pinMode(pins::outputs::OUTPUT3, OUTPUT);
     pinMode(pins::outputs::OUTPUT4, OUTPUT);
-    display->init();
-    display->backlight();
-    display->createChar(specialCharacters::LOADING_START, Icons::LOADING_START);
-    display->createChar(specialCharacters::LOADING_START_FILLED, Icons::LOADING_START_FILLED);
-    display->createChar(specialCharacters::LOADING_END, Icons::LOADING_END);
-    display->createChar(specialCharacters::LOADING_END_FILLED, Icons::LOADING_END_FILLED);
-    display->setCursor(0, 0);
-    display->print("Hello");
-    display->setCursor(0, 1);
-    display->print("Test");
-    pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;
-    pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
+    // display->init();
+    // display->backlight();
+    // display->createChar(specialCharacters::LOADING_START, Icons::LOADING_START);
+    // display->createChar(specialCharacters::LOADING_START_FILLED, Icons::LOADING_START_FILLED);
+    // display->createChar(specialCharacters::LOADING_END, Icons::LOADING_END);
+    // display->createChar(specialCharacters::LOADING_END_FILLED, Icons::LOADING_END_FILLED);
+    // display->setCursor(0, 0);
+    // display->print("Hello");
+    // display->setCursor(0, 1);
+    // display->print("Test");
+    // pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;
+    // pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
     // xTaskCreate(task1, "UNIT Motor with control phase", 512, NULL, 1, NULL);
     // xTaskCreate(task2, "Inputs, Pumps and AirCleaner", 1024, NULL, 1, NULL);
     // xTaskCreate(task3, "Menu & Shift Register", 512, NULL, 1, NULL);
     // xTaskCreate(air_cleaner, "Air Cleaner", 256, NULL, 1, NULL);
     // vTaskStartScheduler();
+    digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, HIGH);
+    delay(1000);
+    digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, LOW);
 }
 
 void loop() {
-    // yield();
+    if(!digitalRead(pins::inputs::PHASE_CONTROL)) {
+        digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, HIGH);
+    } else {
+        digitalWrite(OutputPins::UNIT_MOTOR_OUTPUT, LOW);
+    }
+
+    if(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER)) {
+        digitalWrite(OutputPins::PUMP_UP_OUTPUT, HIGH);
+    } else {
+        digitalWrite(OutputPins::PUMP_UP_OUTPUT, LOW);
+    }
+
+    if(!digitalRead(pins::inputs::PADDLE)) {
+        digitalWrite(OutputPins::PUMP_DOWN_OUTPUT, HIGH);
+    } else {
+        digitalWrite(OutputPins::PUMP_DOWN_OUTPUT, LOW);
+    }
+
+    if(!digitalRead(pins::inputs::SENSOR)) {
+        digitalWrite(OutputPins::AIR_CLEANER_OUTPUT, HIGH);
+    } else {
+        digitalWrite(OutputPins::AIR_CLEANER_OUTPUT, LOW);
+    }
 }

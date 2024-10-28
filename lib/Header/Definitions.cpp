@@ -158,7 +158,7 @@ void update_display() {
         akbar += String(!digitalRead(pins::inputs::PADDLE));
         akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER));
         akbar += String(!digitalRead(pins::inputs::PHASE_CONTROL));
-        akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH));
+        akbar += String(!digitalRead(pins::inputs::SENSOR));
         akbar += String(!digitalRead(pins::inputs::LOWLEVEL_MICTORSWITCH));
         akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_MICTORSWITCH));
         akbar += String(!digitalRead(pins::inputs::AIR_CLEANER_BUTTON));
@@ -307,7 +307,7 @@ void task2(void* pvParameters) {
                 yield();
             }
             setOutput(PUMP_UP_OUTPUT, LOW);
-            while(main_selector_status() == MainSelectorStatus::MANUAL && pump_down_button_status() && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH) && unit_motor_status()) {
+            while(main_selector_status() == MainSelectorStatus::MANUAL && pump_down_button_status() && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::SENSOR) && unit_motor_status()) {
                 setOutput(PUMP_DOWN_OUTPUT, HIGH);
                 yield();
             }
@@ -324,7 +324,7 @@ void task2(void* pvParameters) {
                 setOutput(PUMP_UP_OUTPUT, LOW);
                 if(paddle_status()) {
                     pins::controls::TIMER_TRIGERED = false;
-                    while(automatic_selector_status() == AutomaticSelectorStatus::PADDLE && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH) && unit_motor_status()) {
+                    while(automatic_selector_status() == AutomaticSelectorStatus::PADDLE && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::SENSOR) && unit_motor_status()) {
                         setOutput(PUMP_DOWN_OUTPUT, HIGH);
                         yield();
                     }
@@ -379,7 +379,7 @@ void task2(void* pvParameters) {
                 }
                 setOutput(PUMP_UP_OUTPUT, LOW);
                 pins::controls::TIMER_TRIGERED = false;
-                while(automatic_selector_status() == AutomaticSelectorStatus::AUTO_AUTO && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH) &&unit_motor_status()) {
+                while(automatic_selector_status() == AutomaticSelectorStatus::AUTO_AUTO && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::SENSOR) &&unit_motor_status()) {
                     setOutput(PUMP_DOWN_OUTPUT, HIGH);
                     yield();
                 }
