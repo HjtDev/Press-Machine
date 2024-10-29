@@ -60,6 +60,16 @@ public:
     void drawMenu() override;
 };
 
+class OutputsMenu : public BaseMenu {
+public:
+    OutputsMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList);
+    
+    void check(char key) override;
+    void applyAction(char key) override;
+    void drawMenu() override;
+};
+
+
 extern BaseMenu* menu; // Declare as extern
 extern String newMenu; // Declare as extern
 extern std::vector<uint8_t> g_cursor_range; // Declare as extern

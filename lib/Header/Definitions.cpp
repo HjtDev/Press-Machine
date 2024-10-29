@@ -403,6 +403,8 @@ void task3(void* pvParameters) {
                 menu = new ListMenu(*display, {1, 6}, {'A', 'B', 'C'});
             } else if(newMenu == "inputs") {
                 menu = new InputsMenu(*display, {}, {});
+            } else if(newMenu == "outputs") {
+                menu = new OutputsMenu(*display, {}, {});
             }
             newMenu = "none";
             menu->display.clear();

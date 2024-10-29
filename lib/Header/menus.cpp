@@ -58,10 +58,10 @@ void BaseMenu::limitCursorPosition() {
 
 void BaseMenu::moveCursor(char key) {
 	if (key == 'A') {
-        this->cursor++;
+        this->cursor--;
     }
     if (key == 'B') {
-        this->cursor--;
+        this->cursor++;
     }
 }
 
@@ -129,6 +129,8 @@ void ListMenu::applyAction(char key) {
 	if(key == 'C') {
 		if(this->cursor == 1) {
 			newMenu = "inputs";
+		} else if(this->cursor == 2) {
+			newMenu = "outputs";
 		} else if(this->cursor == 5 || this->cursor == 6) {
 			newMenu = "home";
 		}
@@ -199,6 +201,42 @@ void InputsMenu::drawMenu() {
 }
 
 // End Inputs Menu
+
+// Start Outputs Menu
+
+OutputsMenu::OutputsMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList)
+    : BaseMenu(lcd, cursor_range, validKeysList) {}
+
+void OutputsMenu::check(char key) {
+	if (key != '\0') {
+        this->applyAction(key);
+    }
+	this->drawMenu();
+}
+
+void OutputsMenu::applyAction(char key) {
+	newMenu = "list";
+}
+
+void OutputsMenu::drawMenu() {
+	display.setCursor(0, 0);
+	display.print("UNIT:");
+	display.print(digitalRead(PB12) ? "ON " : "OFF");
+	
+	display.setCursor(10, 0);
+	display.print("UP:");
+	display.print(digitalRead(PB13) ? "ON " : "OFF");
+
+	display.setCursor(0, 1);
+	display.print("AIR:");
+	display.print(digitalRead(PB15) ? "ON " : "OFF");
+
+	display.setCursor(8, 1);
+	display.print("DOWN:");
+	display.print(digitalRead(PB14) ? "ON " : "OFF");
+}
+
+// End Outputs Menu
 
 int calculateSpace(String str) {
     return ((16 - str.length()) / 2);
