@@ -8,6 +8,7 @@ int8_t pins::controls::menu = 1;
 bool pins::controls::TIMER_TRIGERED = false;
 bool pins::controls::air_cleaner = false;
 String pins::controls::status = "0000000000000000";
+char pins::controls::keyValue = '\0';
 LiquidCrystal_I2C* display = new LiquidCrystal_I2C(0x27, 16, 2);
 
 namespace Icons {
@@ -132,21 +133,10 @@ inline bool paddle_status() {
     return !digitalRead(pins::inputs::PADDLE);
 }
 
-inline void setOutput(OuputsPins pin, bool value) {
+inline void setOutput(OutputPins pin, bool value) {
     digitalWrite(pin, value);
 }
 
-inline MenuKey get_menu_key() {
-    if(!digitalRead(pins::inputs::MENU_UP))
-        return MenuKey::UP;
-    if(!digitalRead(pins::inputs::MENU_DOWN))
-        return MenuKey::DOWN;
-    // if(!digitalRead(pins::inputs::MENU_ENTER))
-    //     return MenuKey::ENTER;
-    if(!digitalRead(pins::inputs::MENU_NEXT))
-        return MenuKey::NEXT;
-    return MenuKey::NO_KEY;
-}
 
 void update_display() {
     using namespace pins::controls;
@@ -158,7 +148,7 @@ void update_display() {
         akbar += String(!digitalRead(pins::inputs::PADDLE));
         akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER));
         akbar += String(!digitalRead(pins::inputs::PHASE_CONTROL));
-        akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH));
+        akbar += String(!digitalRead(pins::inputs::SENSOR));
         akbar += String(!digitalRead(pins::inputs::LOWLEVEL_MICTORSWITCH));
         akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_MICTORSWITCH));
         akbar += String(!digitalRead(pins::inputs::AIR_CLEANER_BUTTON));
@@ -266,6 +256,38 @@ inline String set_status() {
     return controls::status;
 }
 
+void readKeypad() {
+    // Read the data pins
+    uint8_t data = (digitalRead(pins::inputs::KEYPAD_DATA_D) << 3) | 
+                   (digitalRead(pins::inputs::KEYPAD_DATA_C) << 2) | 
+                   (digitalRead(pins::inputs::KEYPAD_DATA_B) << 1) | 
+                    digitalRead(pins::inputs::KEYPAD_DATA_A);
+    
+    // Map the binary value to corresponding characters
+    switch (data) {
+        case 0b0000: pins::controls::keyValue = '1'; break;
+        case 0b0001: pins::controls::keyValue = '2'; break;
+        case 0b0010: pins::controls::keyValue = '3'; break;
+        case 0b0011: pins::controls::keyValue = 'A'; break;
+        case 0b0100: pins::controls::keyValue = '4'; break;
+        case 0b0101: pins::controls::keyValue = '5'; break;
+        case 0b0110: pins::controls::keyValue = '6'; break;
+        case 0b0111: pins::controls::keyValue = 'B'; break;
+        case 0b1000: pins::controls::keyValue = '7'; break;
+        case 0b1001: pins::controls::keyValue = '8'; break;
+        case 0b1010: pins::controls::keyValue = '9'; break;
+        case 0b1011: pins::controls::keyValue = 'C'; break;
+        case 0b1100: pins::controls::keyValue = '*'; break;
+        case 0b1101: pins::controls::keyValue = '0'; break;
+        case 0b1110: pins::controls::keyValue = '#'; break;
+        case 0b1111: pins::controls::keyValue = 'D'; break;
+        default: pins::controls::keyValue = '\0'; // No valid key pressed
+    }
+
+    if (pins::controls::keyValue == 'D' && !digitalRead(pins::inputs::KEYPAD_DAV)) {
+        pins::controls::keyValue = '\0';
+    }
+}
 
 inline uint32_t convert_string_to_decimal(String status) {
     uint32_t value = 0;
@@ -307,7 +329,7 @@ void task2(void* pvParameters) {
                 yield();
             }
             setOutput(PUMP_UP_OUTPUT, LOW);
-            while(main_selector_status() == MainSelectorStatus::MANUAL && pump_down_button_status() && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH) && unit_motor_status()) {
+            while(main_selector_status() == MainSelectorStatus::MANUAL && pump_down_button_status() && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::SENSOR) && unit_motor_status()) {
                 setOutput(PUMP_DOWN_OUTPUT, HIGH);
                 yield();
             }
@@ -324,7 +346,7 @@ void task2(void* pvParameters) {
                 setOutput(PUMP_UP_OUTPUT, LOW);
                 if(paddle_status()) {
                     pins::controls::TIMER_TRIGERED = false;
-                    while(automatic_selector_status() == AutomaticSelectorStatus::PADDLE && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH) && unit_motor_status()) {
+                    while(automatic_selector_status() == AutomaticSelectorStatus::PADDLE && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::SENSOR) && unit_motor_status()) {
                         setOutput(PUMP_DOWN_OUTPUT, HIGH);
                         yield();
                     }
@@ -379,7 +401,7 @@ void task2(void* pvParameters) {
                 }
                 setOutput(PUMP_UP_OUTPUT, LOW);
                 pins::controls::TIMER_TRIGERED = false;
-                while(automatic_selector_status() == AutomaticSelectorStatus::AUTO_AUTO && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH) &&unit_motor_status()) {
+                while(automatic_selector_status() == AutomaticSelectorStatus::AUTO_AUTO && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::SENSOR) &&unit_motor_status()) {
                     setOutput(PUMP_DOWN_OUTPUT, HIGH);
                     yield();
                 }
@@ -401,138 +423,54 @@ void task2(void* pvParameters) {
     }
 }
 
-void task3(void* pvParameters) {
-    using namespace pins::controls;
-    float* selected;
-    while(true) {
-        // print("task3", {0, 0}, true, 150);
-        if(menu == 4) {
-            selected = &MICROSWITCH_TIMER;
-        }
-        if(menu == 5) {
-            selected = &AIR_CLEANER_TIMER;
-        }
-        if(get_menu_key() == MenuKey::UP && (menu == 5 || menu == 4)) {
-            // print("up", {0, 0}, true, 150);
-            display->clear();
-            status = "";
-            *selected += .1;
-            controlVariable(*selected, 0.1, 9.9);
-            // update_display();
-        }
-        if(get_menu_key() == MenuKey::DOWN && (menu == 5 || menu == 4)) {
-            // print("down", {0, 0}, true, 150);
-            display->clear();
-            status = "";
-            *selected -= .1;
-            controlVariable(*selected, 0.1, 9.9);
-            // update_display();
-        }
-        if(get_menu_key() == MenuKey::NEXT) {
-            // print("next", {0, 0}, true, 150);
-            display->clear();
-            status = "";
-            uint32_t current = millis();
-            while(get_menu_key() == MenuKey::NEXT) {
-                if(millis() - current >= 3000) {
-                    writeByte(0x1000, int(pins::controls::AIR_CLEANER_TIMER * 10));
-                    writeByte(0x2000, int(pins::controls::MICROSWITCH_TIMER * 10));
-                    print("   Saved Data   ", {0, 0}, true, 1000);
-                    break;
-                }   
-            }
-            menu++;
-            controlVariable(menu, 1, 5);
-            // update_display();
-        }
-        update_display();
-        vTaskDelay(40 / portTICK_PERIOD_MS);
-        // if(get_menu_key() == MenuKey::ENTER) {
-        //     // nothing to do
-        //     // update_display();
-        // }
-        // float* selected = (pins::controls::menu ? &pins::controls::AIR_CLEANER_TIMER : &pins::controls::MICROSWITCH_TIMER);
-        // if(get_menu_key() == MenuKey::UP && *selected < 9.9) {
-        //     *selected += .1;
-        //     update_display();
-        // }
-        // if(get_menu_key() == MenuKey::DOWN && *selected > 0.0) {
-        //     *selected -= .1;
-        //     update_display();
-        // }
-        // if(get_menu_key() == MenuKey::NEXT) {
-        //     uint32_t current = millis();
-        //     while(get_menu_key() == MenuKey::NEXT) {
-        //         if(millis() - current >= 3000) {
-        //             writeByte(0x1000, int(pins::controls::AIR_CLEANER_TIMER * 10));
-        //             writeByte(0x2000, int(pins::controls::MICROSWITCH_TIMER * 10));
-        //             // display->clear();
-        //             // display->setCursor(0, 0);
-        //             // display->print("Save");
-        //             vTaskDelay(1500 / portTICK_PERIOD_MS);
-        //             break;
-        //         }   
-        //     }
-        //     pins::controls::menu = !pins::controls::menu;
-        //     update_display();
-        // }
-        // if(get_menu_key() == MenuKey::ENTER && *selected < 9.9) {
-        //     // nothing to do
-        //     update_display();
-        // }
-
-
-        // Working
-        // String akbar = "00";
-        // akbar += String(!digitalRead(pins::inputs::MAIN_SELECTOR_MANUAL));
-        // akbar += String(!digitalRead(pins::inputs::MAIN_SELECTOR_AUTOMATIC));
-        // akbar += String(!digitalRead(pins::inputs::AUTO_SELECTOR_PADDLE));
-        // akbar += String(!digitalRead(pins::inputs::AUTO_SELECTOR_AUTOMATIC));
-        // akbar += String(!digitalRead(pins::inputs::MOTOR_START));
-        // akbar += String(!digitalRead(pins::inputs::MOTOR_STOP));
-        // akbar += String(!digitalRead(pins::inputs::PUMP_UP));
-        // akbar += String(!digitalRead(pins::inputs::PUMP_DOWN));
-        // akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_MICTORSWITCH));
-        // akbar += String(!digitalRead(pins::inputs::LOWLEVEL_MICTORSWITCH));
-        // akbar += String(!digitalRead(pins::inputs::PHASE_CONTROL));
-        // akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER));
-        // akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH));
-        // akbar += String(!digitalRead(pins::inputs::PADDLE));
-        // display->setCursor(0, 0);
-        // display->print(digitalRead(pins::outputs::OUTPUT1));
-        // display->print(digitalRead(pins::outputs::OUTPUT2));
-        // display->print(digitalRead(pins::outputs::OUTPUT3));
-        // display->print(digitalRead(pins::outputs::OUTPUT4));
-        // display->setCursor(0, 1);
-        // display->print(akbar);
-        // vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-
-        // akbar += String(digitalRead(pins::inputs::MAIN_SELECTOR_MANUAL));
-        // akbar += String(digitalRead(pins::inputs::MAIN_SELECTOR_AUTOMATIC));
-        // akbar += String(digitalRead(pins::inputs::AUTO_SELECTOR_PADDLE));
-        // akbar += String(digitalRead(pins::inputs::AUTO_SELECTOR_AUTOMATIC));
-        // akbar += String(digitalRead(pins::inputs::MOTOR_START));
-        // akbar += String(digitalRead(pins::inputs::MOTOR_STOP));
-        // akbar += String(digitalRead(pins::inputs::PUMP_UP));
-        // akbar += String(digitalRead(pins::inputs::PUMP_DOWN));
-        // akbar += String(digitalRead(pins::inputs::HIGHLEVEL_MICTORSWITCH));
-        // akbar += String(digitalRead(pins::inputs::LOWLEVEL_MICTORSWITCH));
-        // akbar += String(digitalRead(pins::inputs::PHASE_CONTROL));
-        // akbar += String(digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER));
-        // akbar += String(digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH));
-        // akbar += String(digitalRead(pins::inputs::PADDLE));
-
-        
-
-        // digitalWrite(pins::controls::latch, LOW);
-        // shiftOut(pins::controls::data_pin, pins::controls::clock_pin, LSBFIRST, convert_string_to_decimal(akbar) >> 8);
-        // shiftOut(pins::controls::data_pin, pins::controls::clock_pin, LSBFIRST, convert_string_to_decimal(akbar));
-        // digitalWrite(pins::controls::latch, HIGH);
-        // vTaskDelay(100 / portTICK_PERIOD_MS);
-
-    }
-}
+// void task3(void* pvParameters) {
+//     using namespace pins::controls;
+//     float* selected;
+//     while(true) {
+//         // print("task3", {0, 0}, true, 150);
+//         if(menu == 4) {
+//             selected = &MICROSWITCH_TIMER;
+//         }
+//         if(menu == 5) {
+//             selected = &AIR_CLEANER_TIMER;
+//         }
+//         if(get_menu_key() == MenuKey::UP && (menu == 5 || menu == 4)) {
+//             // print("up", {0, 0}, true, 150);
+//             display->clear();
+//             status = "";
+//             *selected += .1;
+//             controlVariable(*selected, 0.1, 9.9);
+//             // update_display();
+//         }
+//         if(get_menu_key() == MenuKey::DOWN && (menu == 5 || menu == 4)) {
+//             // print("down", {0, 0}, true, 150);
+//             display->clear();
+//             status = "";
+//             *selected -= .1;
+//             controlVariable(*selected, 0.1, 9.9);
+//             // update_display();
+//         }
+//         if(get_menu_key() == MenuKey::NEXT) {
+//             // print("next", {0, 0}, true, 150);
+//             display->clear();
+//             status = "";
+//             uint32_t current = millis();
+//             while(get_menu_key() == MenuKey::NEXT) {
+//                 if(millis() - current >= 3000) {
+//                     writeByte(0x1000, int(pins::controls::AIR_CLEANER_TIMER * 10));
+//                     writeByte(0x2000, int(pins::controls::MICROSWITCH_TIMER * 10));
+//                     print("   Saved Data   ", {0, 0}, true, 1000);
+//                     break;
+//                 }   
+//             }
+//             menu++;
+//             controlVariable(menu, 1, 5);
+//             // update_display();
+//         }
+//         update_display();
+//         vTaskDelay(40 / portTICK_PERIOD_MS);
+//     }
+// }
 
 void air_cleaner(void* pvParameters) {
     while(true) {
@@ -554,57 +492,57 @@ void air_cleaner(void* pvParameters) {
     }
 }
 
-void writeByte(uint32_t address, uint8_t value) {
-    uint8_t r = readByte(address);
-    if(r == value) {
-        return;
-    }
-    eraseSector(address);
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
+// void writeByte(uint32_t address, uint8_t value) {
+//     uint8_t r = readByte(address);
+//     if(r == value) {
+//         return;
+//     }
+//     eraseSector(address);
+//     digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
 
-    SPI.transfer(0x06);  // Write Enable command
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    delayMicroseconds(10);
+//     SPI.transfer(0x06);  // Write Enable command
+//     digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
+//     delayMicroseconds(10);
 
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
-    SPI.transfer(0x02);  // Page Program command
-    SPI.transfer((address >> 16) & 0xFF);  // Send the address bytes
-    SPI.transfer((address >> 8) & 0xFF);
-    SPI.transfer(address & 0xFF);
+//     digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
+//     SPI.transfer(0x02);  // Page Program command
+//     SPI.transfer((address >> 16) & 0xFF);  // Send the address bytes
+//     SPI.transfer((address >> 8) & 0xFF);
+//     SPI.transfer(address & 0xFF);
 
-    SPI.transfer(value);
+//     SPI.transfer(value);
 
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    delay(5);  // Page program time
-}
+//     digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
+//     delay(5);  // Page program time
+// }
 
-uint8_t readByte(uint32_t address) {
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
+// uint8_t readByte(uint32_t address) {
+//     digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
 
-    SPI.transfer(0x03);  // Read command
-    SPI.transfer((address >> 16) & 0xFF);  // Send the address bytes
-    SPI.transfer((address >> 8) & 0xFF);
-    SPI.transfer(address & 0xFF);
+//     SPI.transfer(0x03);  // Read command
+//     SPI.transfer((address >> 16) & 0xFF);  // Send the address bytes
+//     SPI.transfer((address >> 8) & 0xFF);
+//     SPI.transfer(address & 0xFF);
 
-    uint8_t readValue = SPI.transfer(0x00);  // Send dummy byte to read data
+//     uint8_t readValue = SPI.transfer(0x00);  // Send dummy byte to read data
 
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    return readValue;
-}
+//     digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
+//     return readValue;
+// }
 
-void eraseSector(uint32_t sectorAddress) {
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
+// void eraseSector(uint32_t sectorAddress) {
+//     digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
 
-    SPI.transfer(0x06);  // Write Enable command
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    delayMicroseconds(10);
+//     SPI.transfer(0x06);  // Write Enable command
+//     digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
+//     delayMicroseconds(10);
 
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
-    SPI.transfer(0x20);  // Sector Erase command
-    SPI.transfer((sectorAddress >> 16) & 0xFF);  // Send the sector address bytes
-    SPI.transfer((sectorAddress >> 8) & 0xFF);
-    SPI.transfer(sectorAddress & 0xFF);
+//     digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
+//     SPI.transfer(0x20);  // Sector Erase command
+//     SPI.transfer((sectorAddress >> 16) & 0xFF);  // Send the sector address bytes
+//     SPI.transfer((sectorAddress >> 8) & 0xFF);
+//     SPI.transfer(sectorAddress & 0xFF);
 
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    delay(100);  // Sector erase time
-}
+//     digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
+//     delay(100);  // Sector erase time
+// }
