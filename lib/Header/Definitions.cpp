@@ -4,11 +4,11 @@
 #include "Definitions.h"
 float pins::controls::AIR_CLEANER_TIMER = 1.0;
 float pins::controls::MICROSWITCH_TIMER = 5.0;
-int8_t pins::controls::menu = 1;
 bool pins::controls::TIMER_TRIGERED = false;
 bool pins::controls::air_cleaner = false;
 String pins::controls::status = "0000000000000000";
 char pins::controls::keyValue = '\0';
+int8_t pins::controls::menu = 1;
 LiquidCrystal_I2C* display = new LiquidCrystal_I2C(0x27, 16, 2);
 
 namespace Icons {
@@ -256,7 +256,7 @@ inline String set_status() {
     return controls::status;
 }
 
-void readKeypad() {
+char readKeypad() {
     // Read the data pins
     uint8_t data = (digitalRead(pins::inputs::KEYPAD_DATA_D) << 3) | 
                    (digitalRead(pins::inputs::KEYPAD_DATA_C) << 2) | 
@@ -287,6 +287,8 @@ void readKeypad() {
     if (pins::controls::keyValue == 'D' && !digitalRead(pins::inputs::KEYPAD_DAV)) {
         pins::controls::keyValue = '\0';
     }
+
+    return pins::controls::keyValue;
 }
 
 inline uint32_t convert_string_to_decimal(String status) {
@@ -423,54 +425,12 @@ void task2(void* pvParameters) {
     }
 }
 
-// void task3(void* pvParameters) {
-//     using namespace pins::controls;
-//     float* selected;
-//     while(true) {
-//         // print("task3", {0, 0}, true, 150);
-//         if(menu == 4) {
-//             selected = &MICROSWITCH_TIMER;
-//         }
-//         if(menu == 5) {
-//             selected = &AIR_CLEANER_TIMER;
-//         }
-//         if(get_menu_key() == MenuKey::UP && (menu == 5 || menu == 4)) {
-//             // print("up", {0, 0}, true, 150);
-//             display->clear();
-//             status = "";
-//             *selected += .1;
-//             controlVariable(*selected, 0.1, 9.9);
-//             // update_display();
-//         }
-//         if(get_menu_key() == MenuKey::DOWN && (menu == 5 || menu == 4)) {
-//             // print("down", {0, 0}, true, 150);
-//             display->clear();
-//             status = "";
-//             *selected -= .1;
-//             controlVariable(*selected, 0.1, 9.9);
-//             // update_display();
-//         }
-//         if(get_menu_key() == MenuKey::NEXT) {
-//             // print("next", {0, 0}, true, 150);
-//             display->clear();
-//             status = "";
-//             uint32_t current = millis();
-//             while(get_menu_key() == MenuKey::NEXT) {
-//                 if(millis() - current >= 3000) {
-//                     writeByte(0x1000, int(pins::controls::AIR_CLEANER_TIMER * 10));
-//                     writeByte(0x2000, int(pins::controls::MICROSWITCH_TIMER * 10));
-//                     print("   Saved Data   ", {0, 0}, true, 1000);
-//                     break;
-//                 }   
-//             }
-//             menu++;
-//             controlVariable(menu, 1, 5);
-//             // update_display();
-//         }
-//         update_display();
-//         vTaskDelay(40 / portTICK_PERIOD_MS);
-//     }
-// }
+void task3(void* pvParameters) {
+    while(true) {
+        
+        vTaskDelay(40 / portTICK_PERIOD_MS);
+    }
+}
 
 void air_cleaner(void* pvParameters) {
     while(true) {

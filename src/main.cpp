@@ -43,16 +43,11 @@ void setup() {
     // pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
     // xTaskCreate(task1, "UNIT Motor with control phase", 512, NULL, 1, NULL);
     // xTaskCreate(task2, "Inputs, Pumps and AirCleaner", 1024, NULL, 1, NULL);
-    // xTaskCreate(task3, "Menu & Shift Register", 512, NULL, 1, NULL);
+    xTaskCreate(task3, "Menu & Shift Register", 512, NULL, 1, NULL);
     // xTaskCreate(air_cleaner, "Air Cleaner", 256, NULL, 1, NULL);
-    // vTaskStartScheduler();
+    vTaskStartScheduler();
 }
 
 void loop() {     
-    readKeypad();
-    delay(100);
-    if(pins::controls::keyValue != '\0') {
-        display->setCursor(0, 0);
-        display->print(pins::controls::keyValue);   
-    }
+    yield();
 }

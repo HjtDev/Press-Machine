@@ -130,7 +130,7 @@ inline bool paddle_status();
 inline MainSelectorStatus main_selector_status();
 inline AutomaticSelectorStatus automatic_selector_status();
 inline TimerSelector timer_selector_status();
-void readKeypad();
+char readKeypad();
 void update_display();
 
 inline String set_status();
