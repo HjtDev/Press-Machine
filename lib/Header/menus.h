@@ -16,9 +16,10 @@ public:
     BaseMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList)
         : display(lcd), cursor(1), cursorRange(cursor_range), validKeys(validKeysList) {}
 
-    virtual void check(char key);
+    void drawSelector(uint8_t pos);
+	void limitCursorPosition();
     bool validateKey(char key);
-    void limitCursorPosition();
+    virtual void check(char key);
     virtual void applyAction(char key) = 0; // Pure virtual function
     virtual void drawMenu() = 0; // Pure virtual function
 };

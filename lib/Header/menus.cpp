@@ -13,6 +13,14 @@ void BaseMenu::check(char key) {
     }
 }
 
+void BaseMenu::drawSelector(uint8_t pos) {
+	if(this->cursor == pos) {
+		this->display.write(specialCharacters::FILLED_SELECTOR);
+	} else {
+		this->display.write(specialCharacters::SELECTOR);
+	}
+}
+
 bool BaseMenu::validateKey(char key) {
     return std::find(this->validKeys.begin(), this->validKeys.end(), key) != this->validKeys.end();
 }
@@ -30,20 +38,22 @@ HomeMenu::HomeMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std
 
 void HomeMenu::applyAction(char key) {
     if (key == 'A') {
-        digitalWrite(PB12, HIGH);
+        this->cursor++;
     }
     if (key == 'B') {
-        digitalWrite(PB12, LOW);
+        this->cursor--;
     }
 }
 
 void HomeMenu::drawMenu() {
-	display.setCursor(0, 0);
-	display.write(specialCharacters::SELECTOR);
     display.setCursor(calculateSpace("HOME"), 0);
 	display.print("HOME");
 	display.setCursor(0, 1);
-	display.write(specialCharacters::FILLED_SELECTOR);
+	drawSelector(1);
+	display.print("List");
+	display.setCursor(10, 1);
+	drawSelector(2);
+	display.print("About");
 }
 
 int calculateSpace(String str) {

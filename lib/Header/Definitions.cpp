@@ -392,8 +392,10 @@ void task2(void* pvParameters) {
 
 void task3(void* pvParameters) {
     while(true) {
-        menu->check(readKeypad());
+        char key = readKeypad();
+        menu->check(key);
         vTaskDelay(40 / portTICK_PERIOD_MS);
+        while(readKeypad() == key){yield(); vTaskDelay(100 / portTICK_PERIOD_MS);}
     }
 }
 
