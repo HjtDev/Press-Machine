@@ -8,7 +8,6 @@ bool pins::controls::TIMER_TRIGERED = false;
 bool pins::controls::air_cleaner = false;
 String pins::controls::status = "0000000000000000";
 char pins::controls::keyValue = '\0';
-int8_t pins::controls::menu = 1;
 LiquidCrystal_I2C* display = new LiquidCrystal_I2C(0x27, 16, 2);
 
 namespace Icons {
@@ -71,6 +70,26 @@ namespace Icons {
         0x19,
         0x03,
         0x1E,
+    };
+    byte selector[] = {
+        0x08,
+        0x0C,
+        0x0A,
+        0x09,
+        0x09,
+        0x0A,
+        0x0C,
+        0x08
+    };
+    byte selector_filled[] = {
+        0x08,
+        0x0C,
+        0x0E,
+        0x0F,
+        0x0F,
+        0x0E,
+        0x0C,
+        0x08
     };
 }
 
@@ -137,60 +156,6 @@ inline void setOutput(OutputPins pin, bool value) {
     digitalWrite(pin, value);
 }
 
-
-void update_display() {
-    using namespace pins::controls;
-    float* selected;
-    // print("next", {0, 0}, true, 150);
-    if(menu == 2) {
-        std::vector<String> data = {"X", "T", "C", "E", "L", "H", "K", "D", "U", "O", "S", "Z", "P", "A", "M", " "};
-        String akbar = "";
-        akbar += String(!digitalRead(pins::inputs::PADDLE));
-        akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER));
-        akbar += String(!digitalRead(pins::inputs::PHASE_CONTROL));
-        akbar += String(!digitalRead(pins::inputs::SENSOR));
-        akbar += String(!digitalRead(pins::inputs::LOWLEVEL_MICTORSWITCH));
-        akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_MICTORSWITCH));
-        akbar += String(!digitalRead(pins::inputs::AIR_CLEANER_BUTTON));
-        akbar += String(!digitalRead(pins::inputs::PUMP_DOWN));
-        akbar += String(!digitalRead(pins::inputs::PUMP_UP));
-        akbar += String(!digitalRead(pins::inputs::MOTOR_STOP));
-        akbar += String(!digitalRead(pins::inputs::MOTOR_START));
-        akbar += String(!digitalRead(pins::inputs::AUTO_SELECTOR_AUTOMATIC));
-        akbar += String(!digitalRead(pins::inputs::AUTO_SELECTOR_PADDLE));
-        akbar += String(!digitalRead(pins::inputs::MAIN_SELECTOR_AUTOMATIC));
-        akbar += String(!digitalRead(pins::inputs::MAIN_SELECTOR_MANUAL));
-        if(akbar != status) {
-            display->clear();
-            for(uint8_t i = 0; i < data.size(); i++) {
-                print(data[i], {i, 0}, false);
-            }
-            print(akbar, {0, 1}, false);
-            status = akbar;
-        }
-    } else if(menu == 3) {
-        print("UNIT:" + String(unit_motor_status() ? "ON " : "OFF"), {0, 0}, false);
-        print("AIR:" + String(air_cleaner_status() ? "ON " : "OFF"), {9, 0}, false);
-        print("UP:" + String(pump_up_status() ? "ON " : "OFF"), {0, 1}, false);
-        print("DOWN:" + String(pump_down_status() ? "ON " : "OFF"), {8, 1}, false);
-    } else if(menu == 4) {
-        selected = &MICROSWITCH_TIMER;
-        print("Highlevel Timer:", {0, 0}, false);
-        print(*selected, {0, 1}, false, 35);
-    } else if(menu == 5) {
-        selected = &AIR_CLEANER_TIMER;
-        print("Cleaning Time:", {0, 0}, false);
-        print(*selected, {0, 1}, false, 35);
-    } else if(menu == 1) {
-        display->setCursor(1, 0);
-        display->print("Sanat Gostaran");
-        display->setCursor(0, 1);
-        display->print("Ph: 09133088089");
-    }
-}
-
-//
-int calculateSpace(String str) {return ((16 - str.length()) / 2);}
 
 void loading() {
     display->setCursor(2, 1); 
@@ -427,7 +392,7 @@ void task2(void* pvParameters) {
 
 void task3(void* pvParameters) {
     while(true) {
-        
+        menu->check(readKeypad());
         vTaskDelay(40 / portTICK_PERIOD_MS);
     }
 }

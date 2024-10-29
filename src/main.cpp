@@ -39,6 +39,15 @@ void setup() {
     display->createChar(specialCharacters::LOADING_START_FILLED, Icons::LOADING_START_FILLED);
     display->createChar(specialCharacters::LOADING_END, Icons::LOADING_END);
     display->createChar(specialCharacters::LOADING_END_FILLED, Icons::LOADING_END_FILLED);
+    display->createChar(specialCharacters::LOADING_END_FILLED, Icons::LOADING_END_FILLED);
+    display->createChar(specialCharacters::SELECTOR, Icons::selector);
+    display->createChar(specialCharacters::FILLED_SELECTOR, Icons::selector_filled);
+    g_cursor_range.push_back(1);
+    g_cursor_range.push_back(2);
+    g_valid_keys.push_back('A');
+    g_valid_keys.push_back('B');
+    menu = new HomeMenu(*display, g_cursor_range, g_valid_keys);
+    menu->drawMenu();
     // pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;
     // pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
     // xTaskCreate(task1, "UNIT Motor with control phase", 512, NULL, 1, NULL);

@@ -14,6 +14,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <vector>
+#include "menus.h"
 
 //  Main Namespace
 namespace pins {
@@ -66,6 +67,8 @@ namespace Icons {
     extern byte LOADING_MIDDLE_FILLED[];
     extern byte LOADING_END[];
     extern byte LOADING_END_FILLED[];
+    extern byte selector[];
+    extern byte selector_filled[];
 }
 
 //  Enumerations
@@ -98,15 +101,6 @@ enum MenuKey {
     ENTER,
     NEXT,
     NO_KEY
-};
-
-enum specialCharacters {
-    LOADING_START_FILLED,
-    LOADING_START,
-    LOADING_END_FILLED,
-    LOADING_END,
-    LOADING_MIDDLE_FILLED,
-    LOADING_MIDDLE,
 };
 
 // Prototypes
