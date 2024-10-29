@@ -55,8 +55,7 @@ namespace pins {
         extern bool air_cleaner;
         extern String status;
         // const uint8_t chipSelectPin = PA4;
-        extern volatile bool keyPressed;
-        extern volatile char keyValue;
+        extern char keyValue;
     }
 }
 

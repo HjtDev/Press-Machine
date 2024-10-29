@@ -8,8 +8,7 @@ int8_t pins::controls::menu = 1;
 bool pins::controls::TIMER_TRIGERED = false;
 bool pins::controls::air_cleaner = false;
 String pins::controls::status = "0000000000000000";
-volatile bool pins::controls::keyPressed = false;
-volatile char pins::controls::keyValue = '\0';
+char pins::controls::keyValue = '\0';
 LiquidCrystal_I2C* display = new LiquidCrystal_I2C(0x27, 16, 2);
 
 namespace Icons {
@@ -284,14 +283,9 @@ void readKeypad() {
         case 0b1111: pins::controls::keyValue = 'D'; break;
         default: pins::controls::keyValue = '\0'; // No valid key pressed
     }
-    if(pins::controls::keyValue == '\0') {
-        pins::controls::keyPressed = false;
-    }
 
     if (pins::controls::keyValue == 'D' && !digitalRead(pins::inputs::KEYPAD_DAV)) {
-        pins::controls::keyPressed = false; // Set flag to indicate a valid key was pressed
-    } else {
-        pins::controls::keyPressed = true;
+        pins::controls::keyValue = '\0';
     }
 }
 

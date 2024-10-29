@@ -51,9 +51,8 @@ void setup() {
 void loop() {     
     readKeypad();
     delay(100);
-    if(pins::controls::keyPressed) {
-        display->setCursor(0, 1);
+    if(pins::controls::keyValue != '\0') {
+        display->setCursor(0, 0);
         display->print(pins::controls::keyValue);   
-        pins::controls::keyPressed = false;
     }
 }
