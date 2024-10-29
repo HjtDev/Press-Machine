@@ -6,7 +6,6 @@ float pins::controls::AIR_CLEANER_TIMER = 1.0;
 float pins::controls::MICROSWITCH_TIMER = 5.0;
 bool pins::controls::TIMER_TRIGERED = false;
 bool pins::controls::air_cleaner = false;
-String pins::controls::status = "0000000000000000";
 char pins::controls::keyValue = '\0';
 LiquidCrystal_I2C* display = new LiquidCrystal_I2C(0x27, 16, 2);
 
@@ -402,6 +401,8 @@ void task3(void* pvParameters) {
                 menu = new AboutMenu(*display, {1, 2}, {'A', 'B', 'C'});
             } else if(newMenu == "list") {
                 menu = new ListMenu(*display, {1, 6}, {'A', 'B', 'C'});
+            } else if(newMenu == "inputs") {
+                menu = new InputsMenu(*display, {}, {});
             }
             newMenu = "none";
             menu->display.clear();

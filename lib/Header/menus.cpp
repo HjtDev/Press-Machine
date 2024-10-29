@@ -4,6 +4,7 @@ BaseMenu* menu = nullptr; // Define the global pointer here
 String newMenu = "none"; // Define the global pointer here
 std::vector<uint8_t> g_cursor_range; // Define the global vector here
 std::vector<char> g_valid_keys; // Define the global vector here
+String status = "0";
 
 void BaseMenu::check(char key) {
     if (this->validateKey(key)) {
@@ -126,7 +127,9 @@ void ListMenu::applyAction(char key) {
 		moveCursor(key);
 	}
 	if(key == 'C') {
-		if(this->cursor == 5 || this->cursor == 6) {
+		if(this->cursor == 1) {
+			newMenu = "inputs";
+		} else if(this->cursor == 5 || this->cursor == 6) {
 			newMenu = "home";
 		}
 	}
@@ -152,6 +155,50 @@ void ListMenu::drawMenu() {
 }
 
 // End List Menu
+
+// Start Inputs Menu
+
+InputsMenu::InputsMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList)
+    : BaseMenu(lcd, cursor_range, validKeysList) {}
+
+void InputsMenu::check(char key) {
+	if (key != '\0') {
+        this->applyAction(key);
+    }
+	this->drawMenu();
+}
+
+void InputsMenu::applyAction(char key) {
+	newMenu = "list";
+}
+
+void InputsMenu::drawMenu() {
+	String akbar = ""; 
+	akbar += String(!digitalRead(PA8)); 
+	akbar += String(!digitalRead(PA9)); 
+	akbar += String(!digitalRead(PA10)); 
+	akbar += String(!digitalRead(PA11)); 
+	akbar += String(!digitalRead(PA12)); 
+	akbar += String(!digitalRead(PA15)); 
+	akbar += String(!digitalRead(PB3)); 
+	akbar += String(!digitalRead(PB4)); 
+	akbar += String(!digitalRead(PB5)); 
+	akbar += String(!digitalRead(PB8)); 
+	akbar += String(!digitalRead(PB9)); 
+	akbar += String(!digitalRead(PC13)); 
+	akbar += String(!digitalRead(PA0)); 
+	akbar += String(!digitalRead(PA1)); 
+	akbar += String(!digitalRead(PA2)); 
+	if(akbar != status) {
+		this->display.setCursor(0, 0);
+		this->display.print("XTCELHKDUOSZPAM");
+		display.setCursor(0, 1);
+		display.print(akbar);
+		status = akbar;
+	}
+}
+
+// End Inputs Menu
 
 int calculateSpace(String str) {
     return ((16 - str.length()) / 2);

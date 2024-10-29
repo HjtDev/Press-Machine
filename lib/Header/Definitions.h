@@ -31,7 +31,7 @@ namespace pins {
         const uint8_t AUTO_SELECTOR_AUTOMATIC = PC13; // 4
         const uint8_t MOTOR_START = PB9; // 5
         const uint8_t MOTOR_STOP = PB8; // 6
-        const uint8_t PUMP_UP = PB6; // 7
+        const uint8_t PUMP_UP = PB5; // 7
         const uint8_t PUMP_DOWN = PB4; // 8
         const uint8_t AIR_CLEANER_BUTTON = PB3;  // 9
         const uint8_t HIGHLEVEL_MICTORSWITCH = PA15; // 10
