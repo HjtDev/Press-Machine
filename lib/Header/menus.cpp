@@ -74,7 +74,9 @@ void HomeMenu::applyAction(char key) {
 		moveCursor(key);
 	}
 	if(key == 'C') {
-		if(cursor == 2) {
+		if(cursor == 1) {
+			newMenu = "list";
+		} else if(cursor == 2) {
 			newMenu = "about";
 		}
 	}
@@ -113,6 +115,43 @@ void AboutMenu::drawMenu() {
 }
 
 // End About Menu
+
+// Start List Menu
+
+ListMenu::ListMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList)
+    : BaseMenu(lcd, cursor_range, validKeysList) {}
+
+void ListMenu::applyAction(char key) {
+	if(key == 'A' || key == 'B') {
+		moveCursor(key);
+	}
+	if(key == 'C') {
+		if(this->cursor == 5 || this->cursor == 6) {
+			newMenu = "home";
+		}
+	}
+}
+
+void ListMenu::drawMenu() {
+	if(this->cursor == 1 || this->cursor == 2) {
+		display.setCursor(0, 0);
+		drawSelector(1, "Inputs");
+		display.setCursor(0, 1);
+		drawSelector(2, "Outputs");
+	} else if(this->cursor == 3 || this->cursor == 4) {
+		display.setCursor(0, 0);
+		drawSelector(3, "Settings");
+		display.setCursor(0, 1);
+		drawSelector(4, "Power Saver");
+	} else if(this->cursor == 5 || this->cursor == 6) {
+		display.setCursor(0, 0);
+		drawSelector(5, "Back");
+		display.setCursor(0, 1);
+		drawSelector(6, "Home");
+	}
+}
+
+// End List Menu
 
 int calculateSpace(String str) {
     return ((16 - str.length()) / 2);
