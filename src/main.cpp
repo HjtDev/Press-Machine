@@ -46,6 +46,7 @@ void setup() {
     g_cursor_range.push_back(2);
     g_valid_keys.push_back('A');
     g_valid_keys.push_back('B');
+    g_valid_keys.push_back('C');
     menu = new HomeMenu(*display, g_cursor_range, g_valid_keys);
     menu->drawMenu();
     // pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;

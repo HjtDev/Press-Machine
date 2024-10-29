@@ -14,9 +14,12 @@ public:
     std::vector<char> validKeys;
 
     BaseMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList)
-        : display(lcd), cursor(1), cursorRange(cursor_range), validKeys(validKeysList) {}
+        : display(lcd), cursor(uint8_t(1)), cursorRange(cursor_range), validKeys(validKeysList) {}
 
-    void drawSelector(uint8_t pos);
+	void drawBack(uint8_t pos);
+	void drawHome(uint8_t pos);
+    void drawSelector(uint8_t pos, String txt);
+	void moveCursor(char key);
 	void limitCursorPosition();
     bool validateKey(char key);
     virtual void check(char key);
@@ -32,7 +35,16 @@ public:
     void drawMenu() override;
 };
 
+class AboutMenu : public BaseMenu {
+public:
+    AboutMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList);
+    
+    void applyAction(char key) override;
+    void drawMenu() override;
+};
+
 extern BaseMenu* menu; // Declare as extern
+extern String newMenu; // Declare as extern
 extern std::vector<uint8_t> g_cursor_range; // Declare as extern
 extern std::vector<char> g_valid_keys; // Declare as extern
 

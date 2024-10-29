@@ -250,7 +250,7 @@ char readKeypad() {
     }
 
     if (pins::controls::keyValue == 'D' && !digitalRead(pins::inputs::KEYPAD_DAV)) {
-        pins::controls::keyValue = '\0';
+        pins::controls::keyValue = '!';
     }
 
     return pins::controls::keyValue;
@@ -395,7 +395,20 @@ void task3(void* pvParameters) {
         char key = readKeypad();
         menu->check(key);
         vTaskDelay(40 / portTICK_PERIOD_MS);
-        while(readKeypad() == key){yield(); vTaskDelay(100 / portTICK_PERIOD_MS);}
+        if(newMenu != "none") {
+            delete menu;
+            if(newMenu == "home") {
+                menu = new HomeMenu(*display, {1, 2}, {'A', 'B', 'C'});
+            } else if(newMenu == "about") {
+                menu = new AboutMenu(*display, {1, 2}, {'A', 'B', 'C'});
+            }
+            newMenu = "none";
+            menu->display.clear();
+            menu->drawMenu();
+            digitalWrite(PB12, LOW);
+        }
+        vTaskDelay(150 / portTICK_PERIOD_MS);
+        while(key != '\0' && readKeypad() == key){}
     }
 }
 

@@ -52,7 +52,6 @@ namespace pins {
         extern float AIR_CLEANER_TIMER;
         extern float MICROSWITCH_TIMER;
         extern bool TIMER_TRIGERED;
-        extern int8_t menu;
         extern bool air_cleaner;
         extern String status;
         // const uint8_t chipSelectPin = PA4;
