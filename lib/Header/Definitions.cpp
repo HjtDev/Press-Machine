@@ -431,8 +431,13 @@ void task3(void* pvParameters) {
             } else if(newMenu == "outputs") {
                 menu = new OutputsMenu(*display, {}, {});
             }
+
             newMenu = "none";
             menu->display.clear();
+            if(returnCursor) {
+                menu->cursor = returnCursor;
+                returnCursor = 0;
+            }
             menu->drawMenu();
         }
         vTaskDelay(150 / portTICK_PERIOD_MS);

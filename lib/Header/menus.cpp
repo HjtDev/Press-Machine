@@ -8,6 +8,7 @@ String status = "0";
 bool powerSaver = false;
 bool powerSaverStatus = true;
 ulong lastActionTime = 0;
+uint8_t returnCursor = 0;
 
 void BaseMenu::check(char key) {
     if (this->validateKey(key)) {
@@ -108,6 +109,7 @@ void AboutMenu::applyAction(char key) {
 	}
 	if(key == 'C' || key == 'D') {
 		newMenu = "home";
+		returnCursor = 2;
 	}
 }
 
@@ -223,6 +225,7 @@ void OutputsMenu::check(char key) {
 
 void OutputsMenu::applyAction(char key) {
 	newMenu = "list";
+	returnCursor = 2;
 }
 
 void OutputsMenu::drawMenu() {

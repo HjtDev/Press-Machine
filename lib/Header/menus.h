@@ -78,6 +78,7 @@ extern String status;
 extern bool powerSaver;
 extern bool powerSaverStatus;
 extern ulong lastActionTime;
+extern uint8_t returnCursor;
 
 int calculateSpace(String str); // Declaration only
 
