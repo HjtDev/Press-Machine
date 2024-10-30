@@ -430,6 +430,8 @@ void task3(void* pvParameters) {
                 menu = new InputsMenu(*display, {}, {});
             } else if(newMenu == "outputs") {
                 menu = new OutputsMenu(*display, {}, {});
+            } else if(newMenu == "settings") {
+                menu = new SettingsMenu(*display, {1, 6}, {'A', 'B', 'C', 'D'});
             }
 
             newMenu = "none";

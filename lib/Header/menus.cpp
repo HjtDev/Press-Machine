@@ -135,6 +135,8 @@ void ListMenu::applyAction(char key) {
 			newMenu = "inputs";
 		} else if(this->cursor == 2) {
 			newMenu = "outputs";
+		} else if(this->cursor == 3) {
+			newMenu = "settings";
 		} else if(this->cursor == 4) {
 			powerSaver = !powerSaver;
 			lastActionTime = millis(); // to prevent unwanted turn off
@@ -247,6 +249,62 @@ void OutputsMenu::drawMenu() {
 }
 
 // End Outputs Menu
+
+// Start Settings Menu
+
+SettingsMenu::SettingsMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList)
+    : BaseMenu(lcd, cursor_range, validKeysList) {}
+
+void SettingsMenu::applyAction(char key) {
+	if(key == 'A' || key == 'B') {
+		moveCursor(key);
+	} else if(key == 'C') {
+		switch (this->cursor)
+		{
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			newMenu = "list";
+			returnCursor = 3;
+			break;
+		case 6:
+			newMenu = "home";
+			break;
+		default:
+			break;
+		}
+	} else if(key == 'D') {
+		newMenu = "list";
+		returnCursor = 3;
+	}
+}
+
+void SettingsMenu::drawMenu() {
+	if(this->cursor == 1 || this->cursor == 2) {
+		display.setCursor(0, 0);
+		drawSelector(1, "Highlevel Timer");
+		display.setCursor(0, 1);
+		drawSelector(2, "Air Timer");
+	} else if(this->cursor == 3 || this->cursor == 4) {
+		display.setCursor(0, 0);
+		drawSelector(3, "Save Settings");
+		display.setCursor(0, 1);
+		drawSelector(4, "Reset Settings");
+	} else if(this->cursor == 5 || this->cursor == 6) {
+		display.setCursor(0, 0);
+		drawSelector(5, "Back");
+		display.setCursor(0, 1);
+		drawSelector(6, "Home");
+	}
+}
+
+// End Settings Menu
 
 int calculateSpace(String str) {
     return ((16 - str.length()) / 2);
