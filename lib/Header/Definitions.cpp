@@ -395,6 +395,10 @@ void task3(void* pvParameters) {
                 menu = new OutputsMenu(*display, {}, {});
             } else if(newMenu == "settings") {
                 menu = new SettingsMenu(*display, {1, 6}, {'A', 'B', 'C', 'D'});
+            } else if(newMenu == "highlevel_timer") {
+                menu = new HTimerMenu(*display, {1, 3}, {'A', 'B', 'C', 'D', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '*'});
+            } else if(newMenu == "aircleaner_timer") {
+                menu = new ATimerMenu(*display, {1, 3}, {'A', 'B', 'C', 'D', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '*'});
             }
 
             newMenu = "none";

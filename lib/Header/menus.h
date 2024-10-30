@@ -82,6 +82,26 @@ public:
     void drawMenu() override;
 };
 
+class HTimerMenu : public BaseMenu {
+public:
+    HTimerMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList);
+    
+    uint8_t txt_cursor;
+
+    void applyAction(char key) override;
+    void drawMenu() override;
+};
+
+class ATimerMenu : public BaseMenu {
+public:
+    ATimerMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList);
+    
+    uint8_t txt_cursor;
+
+    void applyAction(char key) override;
+    void drawMenu() override;
+};
+
 
 extern BaseMenu* menu; // Declare as extern
 extern String newMenu; // Declare as extern

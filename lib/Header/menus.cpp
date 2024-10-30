@@ -354,18 +354,24 @@ void SettingsMenu::applyAction(char key) {
 		switch (this->cursor)
 		{
 		case 1:
+			newMenu = "highlevel_timer";
 			break;
 		case 2:
+			newMenu = "aircleaner_timer";
 			break;
 		case 3:
 			stage("Saving");
 			saveToEEPROM();
+			newMenu = "settings";
+			returnCursor = 3;
 			break;
 		case 4:
 			stage("Resetting Data");
 			pins::controls::AIR_CLEANER_TIMER = 1.0;
 			pins::controls::MICROSWITCH_TIMER = 3.0;
 			saveToEEPROM();
+			newMenu = "settings";
+			returnCursor = 3;
 			break;
 		case 5:
 			newMenu = "list";
@@ -403,6 +409,106 @@ void SettingsMenu::drawMenu() {
 }
 
 // End Settings Menu
+
+// Start HIGHLEVEL TIMER Menu
+
+HTimerMenu::HTimerMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList)
+    : BaseMenu(lcd, cursor_range, validKeysList), txt_cursor(uint8_t(1)) {}
+
+void HTimerMenu::applyAction(char key) {
+	if(key == 'A' || key == 'B') {
+		moveCursor(key);
+	} else if(key == 'C') {
+		if(this->cursor == 2) {
+			newMenu = "settings";
+		} else if(this->cursor == 3) {
+			newMenu = "home";
+		}
+	} else if(key == 'D') {
+		newMenu = "settings";
+	} else if(key >= '0' && key <= '9' && this->cursor == 1) {
+		if(this->txt_cursor == 1) {
+			pins::controls::MICROSWITCH_TIMER = float(int(key - '0') + (pins::controls::MICROSWITCH_TIMER - int(pins::controls::MICROSWITCH_TIMER)));
+			controlVariable(pins::controls::MICROSWITCH_TIMER, .1, 9.9);
+			this->txt_cursor = 2;
+		} else if(this->txt_cursor == 2) {
+			pins::controls::MICROSWITCH_TIMER = float(int(pins::controls::MICROSWITCH_TIMER) + float('9' - '0') / 10);
+			controlVariable(pins::controls::MICROSWITCH_TIMER, .1, 9.9);
+			this->txt_cursor = 1;
+		}
+	} else if(key == '*' && this->cursor == 1) {
+		pins::controls::MICROSWITCH_TIMER += .1;
+		controlVariable(pins::controls::MICROSWITCH_TIMER, .1, 9.9);
+	} else if(key == '#' && this->cursor == 1) {
+		pins::controls::MICROSWITCH_TIMER -= .1;
+		controlVariable(pins::controls::MICROSWITCH_TIMER, .1, 9.9);
+	}
+}
+
+void HTimerMenu::drawMenu() {
+	display.setCursor(0, 0);
+	drawSelector(1, "Value:");
+	display.setCursor(10, 0);
+	display.print(this->txt_cursor);
+	display.setCursor(12, 0);
+	display.print(pins::controls::MICROSWITCH_TIMER, 1);
+	display.print('s');
+	drawBack(2);
+	drawHome(3);
+}
+
+// End HIGHLEVEL TIMER Menu
+
+// Start AIR TIMER Menu
+
+ATimerMenu::ATimerMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList)
+    : BaseMenu(lcd, cursor_range, validKeysList), txt_cursor(uint8_t(1)) {}
+
+void ATimerMenu::applyAction(char key) {
+	if(key == 'A' || key == 'B') {
+		moveCursor(key);
+	} else if(key == 'C') {
+		if(this->cursor == 2) {
+			newMenu = "settings";
+			returnCursor = 2;
+		} else if(this->cursor == 3) {
+			newMenu = "home";
+		}
+	} else if(key == 'D') {
+		newMenu = "settings";
+		returnCursor = 2;
+	} else if(key >= '0' && key <= '9' && this->cursor == 1) {
+		if(this->txt_cursor == 1) {
+			pins::controls::AIR_CLEANER_TIMER = float(int(key - '0') + (pins::controls::AIR_CLEANER_TIMER - int(pins::controls::AIR_CLEANER_TIMER)));
+			controlVariable(pins::controls::AIR_CLEANER_TIMER, .1, 9.9);
+			this->txt_cursor = 2;
+		} else if(this->txt_cursor == 2) {
+			pins::controls::AIR_CLEANER_TIMER = float(int(pins::controls::AIR_CLEANER_TIMER) + float('9' - '0') / 10);
+			controlVariable(pins::controls::AIR_CLEANER_TIMER, .1, 9.9);
+			this->txt_cursor = 1;
+		}
+	} else if(key == '*' && this->cursor == 1) {
+		pins::controls::AIR_CLEANER_TIMER += .1;
+		controlVariable(pins::controls::AIR_CLEANER_TIMER, .1, 9.9);
+	} else if(key == '#' && this->cursor == 1) {
+		pins::controls::AIR_CLEANER_TIMER -= .1;
+		controlVariable(pins::controls::AIR_CLEANER_TIMER, .1, 9.9);
+	}
+}
+
+void ATimerMenu::drawMenu() {
+	display.setCursor(0, 0);
+	drawSelector(1, "Value:");
+	display.setCursor(10, 0);
+	display.print(this->txt_cursor);
+	display.setCursor(12, 0);
+	display.print(pins::controls::AIR_CLEANER_TIMER, 1);
+	display.print('s');
+	drawBack(2);
+	drawHome(3);
+}
+
+// End AIR TIMER Menu
 
 int calculateSpace(String str) {
     return ((16 - str.length()) / 2);
