@@ -75,6 +75,9 @@ extern String newMenu; // Declare as extern
 extern std::vector<uint8_t> g_cursor_range; // Declare as extern
 extern std::vector<char> g_valid_keys; // Declare as extern
 extern String status;
+extern bool powerSaver;
+extern bool powerSaverStatus;
+extern ulong lastActionTime;
 
 int calculateSpace(String str); // Declaration only
 

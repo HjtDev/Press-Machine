@@ -123,8 +123,9 @@ inline bool paddle_status();
 inline MainSelectorStatus main_selector_status();
 inline AutomaticSelectorStatus automatic_selector_status();
 inline TimerSelector timer_selector_status();
+
 char readKeypad();
-void update_display();
+char checkForPowerSaver(char key);
 
 inline String set_status();
 inline uint32_t convert_string_to_decimal(String status);

@@ -1,10 +1,13 @@
 #include "menus.h"
 
-BaseMenu* menu = nullptr; // Define the global pointer here
-String newMenu = "none"; // Define the global pointer here
-std::vector<uint8_t> g_cursor_range; // Define the global vector here
-std::vector<char> g_valid_keys; // Define the global vector here
+BaseMenu* menu = nullptr;
+String newMenu = "none";
+std::vector<uint8_t> g_cursor_range;
+std::vector<char> g_valid_keys;
 String status = "0";
+bool powerSaver = false;
+bool powerSaverStatus = true;
+ulong lastActionTime = 0;
 
 void BaseMenu::check(char key) {
     if (this->validateKey(key)) {
@@ -130,6 +133,9 @@ void ListMenu::applyAction(char key) {
 			newMenu = "inputs";
 		} else if(this->cursor == 2) {
 			newMenu = "outputs";
+		} else if(this->cursor == 4) {
+			powerSaver = !powerSaver;
+			lastActionTime = millis(); // to prevent unwanted turn off
 		} else if(this->cursor == 5 || this->cursor == 6) {
 			newMenu = "home";
 		}
@@ -148,7 +154,7 @@ void ListMenu::drawMenu() {
 		display.setCursor(0, 0);
 		drawSelector(3, "Settings");
 		display.setCursor(0, 1);
-		drawSelector(4, "Power Saver");
+		drawSelector(4, "Power Saver " + String(powerSaver ? "ON " : "OFF"));
 	} else if(this->cursor == 5 || this->cursor == 6) {
 		display.setCursor(0, 0);
 		drawSelector(5, "Back");

@@ -252,7 +252,32 @@ char readKeypad() {
         pins::controls::keyValue = '\0';
     }
 
-    return pins::controls::keyValue;
+    if(powerSaver) {
+        // 1- Backlight is one: returns the key
+        // 2- Backlight is off: returns '\0' and turns on the backlight
+        return checkForPowerSaver(pins::controls::keyValue);
+    } else {
+        return pins::controls::keyValue;
+    }
+}
+
+char checkForPowerSaver(char key) {
+    if(key != '\0') {
+        if(!powerSaverStatus) {
+            powerSaverStatus = true;
+            display->backlight();
+            lastActionTime = millis();
+            return '\0';
+        } else {
+            return key;
+        }
+    } else {
+        if(millis() - lastActionTime >= 30000) {
+            powerSaverStatus = false;
+            display->noBacklight();
+        }
+        return '\0';
+    }
 }
 
 inline uint32_t convert_string_to_decimal(String status) {
