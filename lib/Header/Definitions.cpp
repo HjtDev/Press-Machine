@@ -398,9 +398,9 @@ void task3(void* pvParameters) {
             if(newMenu == "home") {
                 menu = new HomeMenu(*display, {1, 2}, {'A', 'B', 'C'});
             } else if(newMenu == "about") {
-                menu = new AboutMenu(*display, {1, 2}, {'A', 'B', 'C'});
+                menu = new AboutMenu(*display, {1, 2}, {'A', 'B', 'C', 'D'});
             } else if(newMenu == "list") {
-                menu = new ListMenu(*display, {1, 6}, {'A', 'B', 'C'});
+                menu = new ListMenu(*display, {1, 6}, {'A', 'B', 'C', 'D'});
             } else if(newMenu == "inputs") {
                 menu = new InputsMenu(*display, {}, {});
             } else if(newMenu == "outputs") {

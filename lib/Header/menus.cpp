@@ -103,7 +103,7 @@ void AboutMenu::applyAction(char key) {
 	if(key == 'A' || key == 'B') {
 		moveCursor(key);
 	}
-	if(key == 'C') {
+	if(key == 'C' || key == 'D') {
 		newMenu = "home";
 	}
 }
@@ -125,8 +125,7 @@ ListMenu::ListMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std
 void ListMenu::applyAction(char key) {
 	if(key == 'A' || key == 'B') {
 		moveCursor(key);
-	}
-	if(key == 'C') {
+	} else if(key == 'C') {
 		if(this->cursor == 1) {
 			newMenu = "inputs";
 		} else if(this->cursor == 2) {
@@ -134,6 +133,8 @@ void ListMenu::applyAction(char key) {
 		} else if(this->cursor == 5 || this->cursor == 6) {
 			newMenu = "home";
 		}
+	} else if(key == 'D') {
+		newMenu = "home";
 	}
 }
 
