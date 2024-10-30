@@ -10,10 +10,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include <SevenSegmentTM1637.h>
-#include <SPI.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <vector>
+#include "menus.h"
 
 //  Main Namespace
 namespace pins {
@@ -30,7 +30,7 @@ namespace pins {
         const uint8_t AUTO_SELECTOR_AUTOMATIC = PC13; // 4
         const uint8_t MOTOR_START = PB9; // 5
         const uint8_t MOTOR_STOP = PB8; // 6
-        const uint8_t PUMP_UP = PB6; // 7
+        const uint8_t PUMP_UP = PB5; // 7
         const uint8_t PUMP_DOWN = PB4; // 8
         const uint8_t AIR_CLEANER_BUTTON = PB3;  // 9
         const uint8_t HIGHLEVEL_MICTORSWITCH = PA15; // 10
@@ -51,10 +51,9 @@ namespace pins {
         extern float AIR_CLEANER_TIMER;
         extern float MICROSWITCH_TIMER;
         extern bool TIMER_TRIGERED;
-        extern int8_t menu;
         extern bool air_cleaner;
         extern String status;
-        // const uint8_t chipSelectPin = PA4;
+        const uint8_t chipSelectPin = PA4;
         extern char keyValue;
     }
 }
@@ -66,6 +65,8 @@ namespace Icons {
     extern byte LOADING_MIDDLE_FILLED[];
     extern byte LOADING_END[];
     extern byte LOADING_END_FILLED[];
+    extern byte selector[];
+    extern byte selector_filled[];
 }
 
 //  Enumerations
@@ -100,15 +101,6 @@ enum MenuKey {
     NO_KEY
 };
 
-enum specialCharacters {
-    LOADING_START_FILLED,
-    LOADING_START,
-    LOADING_END_FILLED,
-    LOADING_END,
-    LOADING_MIDDLE_FILLED,
-    LOADING_MIDDLE,
-};
-
 // Prototypes
 extern LiquidCrystal_I2C* display;
 // Outputs setter
@@ -130,8 +122,9 @@ inline bool paddle_status();
 inline MainSelectorStatus main_selector_status();
 inline AutomaticSelectorStatus automatic_selector_status();
 inline TimerSelector timer_selector_status();
-void readKeypad();
-void update_display();
+
+char readKeypad();
+char checkForPowerSaver(char key);
 
 inline String set_status();
 inline uint32_t convert_string_to_decimal(String status);
@@ -139,18 +132,16 @@ inline uint32_t convert_string_to_decimal(String status);
 template<class data>
 void print(data msg, std::vector<uint8_t> cursor, bool clear=true, unsigned long delay=0);
 
-void loading();
-void makeDelay();
-void stage(String str);
-
-
-template<typename A>
-inline void controlVariable(A &var, const int min, const int max){if(var < min) var = max; else if(var > max) var = min;};;
 
 // EEPROM
 void writeByte(uint32_t address, uint8_t value);
 uint8_t readByte(uint32_t address);
 void eraseSector(uint32_t sectorAddress);
+void saveToEEPROM();
+void readFromEEPROM();
+
+template<typename A>
+inline void controlVariable(A &var, const int min, const int max){if(var < min) var = max; else if(var > max) var = min;};;
 
 // Synchronous tasks
 void task1(void* pvParameters);  // UNIT Motor with phase control

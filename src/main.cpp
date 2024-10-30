@@ -2,9 +2,9 @@
 #include <Definitions.h>
 
 void setup() {
-    // SPI.begin();
-    // pinMode(pins::controls::chipSelectPin, OUTPUT);
-    // digitalWrite(pins::controls::chipSelectPin, HIGH);
+    SPI.begin();
+    pinMode(pins::controls::chipSelectPin, OUTPUT);
+    digitalWrite(pins::controls::chipSelectPin, HIGH);
 
     pinMode(pins::inputs::MAIN_SELECTOR_MANUAL, INPUT);
     pinMode(pins::inputs::MAIN_SELECTOR_AUTOMATIC, INPUT);
@@ -35,24 +35,29 @@ void setup() {
     pinMode(pins::outputs::OUTPUT4, OUTPUT);
     display->init();
     display->backlight();
+    display->createChar(specialCharacters::SELECTOR, Icons::selector);
+    display->createChar(specialCharacters::FILLED_SELECTOR, Icons::selector_filled);
     display->createChar(specialCharacters::LOADING_START, Icons::LOADING_START);
     display->createChar(specialCharacters::LOADING_START_FILLED, Icons::LOADING_START_FILLED);
     display->createChar(specialCharacters::LOADING_END, Icons::LOADING_END);
     display->createChar(specialCharacters::LOADING_END_FILLED, Icons::LOADING_END_FILLED);
-    // pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;
-    // pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
+    display->createChar(specialCharacters::LOADING_MIDDLE, Icons::LOADING_MIDDLE);
+    display->createChar(specialCharacters::LOADING_MIDDLE_FILLED, Icons::LOADING_MIDDLE_FILLED);
+    g_cursor_range.push_back(1);
+    g_cursor_range.push_back(2);
+    g_valid_keys.push_back('A');
+    g_valid_keys.push_back('B');
+    g_valid_keys.push_back('C');
+    menu = new HomeMenu(*display, g_cursor_range, g_valid_keys);
+    menu->drawMenu();
+    readFromEEPROM();
     // xTaskCreate(task1, "UNIT Motor with control phase", 512, NULL, 1, NULL);
     // xTaskCreate(task2, "Inputs, Pumps and AirCleaner", 1024, NULL, 1, NULL);
-    // xTaskCreate(task3, "Menu & Shift Register", 512, NULL, 1, NULL);
+    xTaskCreate(task3, "Menu & Shift Register", 512, NULL, 1, NULL);
     // xTaskCreate(air_cleaner, "Air Cleaner", 256, NULL, 1, NULL);
-    // vTaskStartScheduler();
+    vTaskStartScheduler();
 }
 
 void loop() {     
-    readKeypad();
-    delay(100);
-    if(pins::controls::keyValue != '\0') {
-        display->setCursor(0, 0);
-        display->print(pins::controls::keyValue);   
-    }
+    yield();
 }
