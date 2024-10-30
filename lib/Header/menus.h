@@ -5,6 +5,8 @@
 #include <LiquidCrystal_I2C.h>
 #include <vector>
 #include <algorithm>
+#include <SPI.h>
+#include "Definitions.h"
 
 class BaseMenu {
 public:
@@ -21,6 +23,9 @@ public:
     void drawSelector(uint8_t pos, String txt);
 	void moveCursor(char key);
 	void limitCursorPosition();
+    void loading();
+    void makeDelay();
+    void stage(String str);
     bool validateKey(char key);
     virtual void check(char key);
     virtual void applyAction(char key) = 0; // Pure virtual function
@@ -88,7 +93,10 @@ extern bool powerSaverStatus;
 extern ulong lastActionTime;
 extern uint8_t returnCursor;
 
+
+
 int calculateSpace(String str); // Declaration only
+
 
 enum specialCharacters {
     LOADING_START_FILLED,

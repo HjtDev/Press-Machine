@@ -10,7 +10,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include <SevenSegmentTM1637.h>
-#include <SPI.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <vector>
@@ -54,7 +53,7 @@ namespace pins {
         extern bool TIMER_TRIGERED;
         extern bool air_cleaner;
         extern String status;
-        // const uint8_t chipSelectPin = PA4;
+        const uint8_t chipSelectPin = PA4;
         extern char keyValue;
     }
 }
@@ -133,18 +132,16 @@ inline uint32_t convert_string_to_decimal(String status);
 template<class data>
 void print(data msg, std::vector<uint8_t> cursor, bool clear=true, unsigned long delay=0);
 
-void loading();
-void makeDelay();
-void stage(String str);
-
-
-template<typename A>
-inline void controlVariable(A &var, const int min, const int max){if(var < min) var = max; else if(var > max) var = min;};;
 
 // EEPROM
 void writeByte(uint32_t address, uint8_t value);
 uint8_t readByte(uint32_t address);
 void eraseSector(uint32_t sectorAddress);
+void saveToEEPROM();
+void readFromEEPROM();
+
+template<typename A>
+inline void controlVariable(A &var, const int min, const int max){if(var < min) var = max; else if(var > max) var = min;};;
 
 // Synchronous tasks
 void task1(void* pvParameters);  // UNIT Motor with phase control

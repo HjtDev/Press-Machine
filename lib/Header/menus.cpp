@@ -10,6 +10,7 @@ bool powerSaverStatus = true;
 ulong lastActionTime = 0;
 uint8_t returnCursor = 0;
 
+
 void BaseMenu::check(char key) {
     if (this->validateKey(key)) {
         this->applyAction(key);
@@ -67,6 +68,97 @@ void BaseMenu::moveCursor(char key) {
     if (key == 'B') {
         this->cursor++;
     }
+}
+
+void BaseMenu::loading() {
+    display.setCursor(2, 1); 
+    display.write(specialCharacters::LOADING_START);
+    for(uint8_t col = 3; col < 13; col++) {
+        display.setCursor(col, 1);
+        display.write(specialCharacters::LOADING_MIDDLE);
+    }
+    display.write(specialCharacters::LOADING_END);
+    makeDelay();
+    display.setCursor(2, 1);
+    display.write(specialCharacters::LOADING_START_FILLED);
+    for(uint8_t col = 3; col < 13; col++) {
+        makeDelay();
+        display.setCursor(col, 1);
+        display.write(specialCharacters::LOADING_MIDDLE_FILLED);
+    }
+    makeDelay();
+    display.write(specialCharacters::LOADING_END_FILLED);
+    makeDelay();
+};
+//
+void BaseMenu::makeDelay() {
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    ulong* rand_input = new ulong(random(0, 750));
+    vTaskDelay(*rand_input / portTICK_PERIOD_MS);
+    delete rand_input;
+};
+
+void BaseMenu::stage(String str) {
+    display.clear();
+    uint8_t space = calculateSpace(str);
+    display.setCursor(space, 0);
+    display.print(str);
+    loading();
+};
+
+void writeByte(uint32_t address, uint8_t value) {
+    uint8_t r = readByte(address);
+    if(r == value) {
+        return;
+    }
+    eraseSector(address);
+    digitalWrite(PA4, LOW);  // Select the chip
+
+    SPI.transfer(0x06);  // Write Enable command
+    digitalWrite(PA4, HIGH);  // Deselect the chip
+    delayMicroseconds(10);
+
+    digitalWrite(PA4, LOW);  // Select the chip
+    SPI.transfer(0x02);  // Page Program command
+    SPI.transfer((address >> 16) & 0xFF);  // Send the address bytes
+    SPI.transfer((address >> 8) & 0xFF);
+    SPI.transfer(address & 0xFF);
+
+    SPI.transfer(value);
+
+    digitalWrite(PA4, HIGH);  // Deselect the chip
+    delay(5);  // Page program time
+}
+
+uint8_t readByte(uint32_t address) {
+    digitalWrite(PA4, LOW);  // Select the chip
+
+    SPI.transfer(0x03);  // Read command
+    SPI.transfer((address >> 16) & 0xFF);  // Send the address bytes
+    SPI.transfer((address >> 8) & 0xFF);
+    SPI.transfer(address & 0xFF);
+
+    uint8_t readValue = SPI.transfer(0x00);  // Send dummy byte to read data
+
+    digitalWrite(PA4, HIGH);  // Deselect the chip
+    return readValue;
+}
+
+void eraseSector(uint32_t sectorAddress) {
+    digitalWrite(PA4, LOW);  // Select the chip
+
+    SPI.transfer(0x06);  // Write Enable command
+    digitalWrite(PA4, HIGH);  // Deselect the chip
+    delayMicroseconds(10);
+
+    digitalWrite(PA4, LOW);  // Select the chip
+    SPI.transfer(0x20);  // Sector Erase command
+    SPI.transfer((sectorAddress >> 16) & 0xFF);  // Send the sector address bytes
+    SPI.transfer((sectorAddress >> 8) & 0xFF);
+    SPI.transfer(sectorAddress & 0xFF);
+
+    digitalWrite(PA4, HIGH);  // Deselect the chip
+    delay(100);  // Sector erase time
 }
 
 // Start Home Menu
@@ -266,8 +358,14 @@ void SettingsMenu::applyAction(char key) {
 		case 2:
 			break;
 		case 3:
+			stage("Saving");
+			saveToEEPROM();
 			break;
 		case 4:
+			stage("Resetting Data");
+			pins::controls::AIR_CLEANER_TIMER = 1.0;
+			pins::controls::MICROSWITCH_TIMER = 3.0;
+			saveToEEPROM();
 			break;
 		case 5:
 			newMenu = "list";
