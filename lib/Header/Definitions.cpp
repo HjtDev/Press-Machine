@@ -437,9 +437,11 @@ void air_cleaner(void* pvParameters) {
 void saveToEEPROM() {
     writeByte(0x1000, int(pins::controls::AIR_CLEANER_TIMER * 10)); 
     writeByte(0x2000, int(pins::controls::MICROSWITCH_TIMER * 10)); 
+    writeByte(0x3000, uint8_t(powerSaver)); 
 }
 
 void readFromEEPROM() {
     pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;
     pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
+    powerSaver = bool(readByte(0x3000));
 }
