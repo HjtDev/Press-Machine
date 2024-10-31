@@ -184,6 +184,16 @@ inline String set_status() {
 }
 
 char readKeypad() {
+
+    if(!digitalRead(pins::inputs::KEYPAD_DAV)) {
+        pins::controls::keyValue = '\0';
+        if(powerSaver) {
+            return checkForPowerSaver(pins::controls::keyValue);
+        } else {
+            return pins::controls::keyValue;
+        }
+    }
+
     // Read the data pins
     uint8_t data = (digitalRead(pins::inputs::KEYPAD_DATA_D) << 3) | 
                    (digitalRead(pins::inputs::KEYPAD_DATA_C) << 2) | 
@@ -226,10 +236,10 @@ char readKeypad() {
 
 char checkForPowerSaver(char key) {
     if(key != '\0') {
+        lastActionTime = millis();
         if(!powerSaverStatus) {
             powerSaverStatus = true;
             display->backlight();
-            lastActionTime = millis();
             return '\0';
         } else {
             return key;
