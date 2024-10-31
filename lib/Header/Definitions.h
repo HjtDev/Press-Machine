@@ -55,6 +55,7 @@ namespace pins {
         extern String status;
         const uint8_t chipSelectPin = PA4;
         extern char keyValue;
+        extern bool change;
     }
 }
 

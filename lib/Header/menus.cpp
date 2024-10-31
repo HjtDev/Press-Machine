@@ -232,6 +232,7 @@ void ListMenu::applyAction(char key) {
 		} else if(this->cursor == 4) {
 			powerSaver = !powerSaver;
 			lastActionTime = millis(); // to prevent unwanted turn off
+			saveToEEPROM();
 		} else if(this->cursor == 5 || this->cursor == 6) {
 			newMenu = "home";
 		}
@@ -360,24 +361,18 @@ void SettingsMenu::applyAction(char key) {
 			newMenu = "aircleaner_timer";
 			break;
 		case 3:
-			stage("Saving");
-			saveToEEPROM();
+			stage("Resetting Data");
+			pins::controls::AIR_CLEANER_TIMER = 1.0;
+			pins::controls::MICROSWITCH_TIMER = 3.0;
+			pins::controls::change = true;
 			newMenu = "settings";
 			returnCursor = 3;
 			break;
 		case 4:
-			stage("Resetting Data");
-			pins::controls::AIR_CLEANER_TIMER = 1.0;
-			pins::controls::MICROSWITCH_TIMER = 3.0;
-			saveToEEPROM();
-			newMenu = "settings";
-			returnCursor = 3;
-			break;
-		case 5:
 			newMenu = "list";
 			returnCursor = 3;
 			break;
-		case 6:
+		case 5:
 			newMenu = "home";
 			break;
 		default:
@@ -397,14 +392,12 @@ void SettingsMenu::drawMenu() {
 		drawSelector(2, "Air Timer");
 	} else if(this->cursor == 3 || this->cursor == 4) {
 		display.setCursor(0, 0);
-		drawSelector(3, "Save Settings");
+		drawSelector(3, "Reset Settings");
 		display.setCursor(0, 1);
-		drawSelector(4, "Reset Settings");
-	} else if(this->cursor == 5 || this->cursor == 6) {
+		drawSelector(4, "Back");
+	} else if(this->cursor == 5) {
 		display.setCursor(0, 0);
-		drawSelector(5, "Back");
-		display.setCursor(0, 1);
-		drawSelector(6, "Home");
+		drawSelector(5, "Home");
 	}
 }
 
@@ -429,27 +422,26 @@ void HTimerMenu::applyAction(char key) {
 	} else if(key >= '0' && key <= '9' && this->cursor == 1) {
 		if(this->txt_cursor == 1) {
 			pins::controls::MICROSWITCH_TIMER = float(int(key - '0') + (pins::controls::MICROSWITCH_TIMER - int(pins::controls::MICROSWITCH_TIMER)));
-			controlVariable(pins::controls::MICROSWITCH_TIMER, .1, 9.9);
 			this->txt_cursor = 2;
 		} else if(this->txt_cursor == 2) {
-			pins::controls::MICROSWITCH_TIMER = float(int(pins::controls::MICROSWITCH_TIMER) + float('9' - '0') / 10);
-			controlVariable(pins::controls::MICROSWITCH_TIMER, .1, 9.9);
+			pins::controls::MICROSWITCH_TIMER = float(int(pins::controls::MICROSWITCH_TIMER)) + float(int(key - '0')) / 10.0f;
 			this->txt_cursor = 1;
-		}
+    	}
+		pins::controls::change = true;
 	} else if(key == '*' && this->cursor == 1) {
 		pins::controls::MICROSWITCH_TIMER += .1;
 		controlVariable(pins::controls::MICROSWITCH_TIMER, .1, 9.9);
+		pins::controls::change = true;
 	} else if(key == '#' && this->cursor == 1) {
 		pins::controls::MICROSWITCH_TIMER -= .1;
 		controlVariable(pins::controls::MICROSWITCH_TIMER, .1, 9.9);
+		pins::controls::change = true;
 	}
 }
 
 void HTimerMenu::drawMenu() {
 	display.setCursor(0, 0);
 	drawSelector(1, "Value:");
-	display.setCursor(10, 0);
-	display.print(this->txt_cursor);
 	display.setCursor(12, 0);
 	display.print(pins::controls::MICROSWITCH_TIMER, 1);
 	display.print('s');
@@ -480,27 +472,26 @@ void ATimerMenu::applyAction(char key) {
 	} else if(key >= '0' && key <= '9' && this->cursor == 1) {
 		if(this->txt_cursor == 1) {
 			pins::controls::AIR_CLEANER_TIMER = float(int(key - '0') + (pins::controls::AIR_CLEANER_TIMER - int(pins::controls::AIR_CLEANER_TIMER)));
-			controlVariable(pins::controls::AIR_CLEANER_TIMER, .1, 9.9);
 			this->txt_cursor = 2;
 		} else if(this->txt_cursor == 2) {
-			pins::controls::AIR_CLEANER_TIMER = float(int(pins::controls::AIR_CLEANER_TIMER) + float('9' - '0') / 10);
-			controlVariable(pins::controls::AIR_CLEANER_TIMER, .1, 9.9);
+			pins::controls::AIR_CLEANER_TIMER = float(int(pins::controls::AIR_CLEANER_TIMER)) + float(int(key - '0')) / 10.0f;
 			this->txt_cursor = 1;
-		}
+    	}
+		pins::controls::change = true;
 	} else if(key == '*' && this->cursor == 1) {
 		pins::controls::AIR_CLEANER_TIMER += .1;
 		controlVariable(pins::controls::AIR_CLEANER_TIMER, .1, 9.9);
+		pins::controls::change = true;
 	} else if(key == '#' && this->cursor == 1) {
 		pins::controls::AIR_CLEANER_TIMER -= .1;
 		controlVariable(pins::controls::AIR_CLEANER_TIMER, .1, 9.9);
+		pins::controls::change = true;
 	}
 }
 
 void ATimerMenu::drawMenu() {
 	display.setCursor(0, 0);
 	drawSelector(1, "Value:");
-	display.setCursor(10, 0);
-	display.print(this->txt_cursor);
 	display.setCursor(12, 0);
 	display.print(pins::controls::AIR_CLEANER_TIMER, 1);
 	display.print('s');
