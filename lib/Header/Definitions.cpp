@@ -4,10 +4,10 @@
 #include "Definitions.h"
 float pins::controls::AIR_CLEANER_TIMER = 1.0;
 float pins::controls::MICROSWITCH_TIMER = 5.0;
-int8_t pins::controls::menu = 1;
 bool pins::controls::TIMER_TRIGERED = false;
 bool pins::controls::air_cleaner = false;
-String pins::controls::status = "0000000000000000";
+char pins::controls::keyValue = '\0';
+bool pins::controls::change = false;
 LiquidCrystal_I2C* display = new LiquidCrystal_I2C(0x27, 16, 2);
 
 namespace Icons {
@@ -71,6 +71,26 @@ namespace Icons {
         0x03,
         0x1E,
     };
+    byte selector[] = {
+        0x08,
+        0x0C,
+        0x0A,
+        0x09,
+        0x09,
+        0x0A,
+        0x0C,
+        0x08
+    };
+    byte selector_filled[] = {
+        0x08,
+        0x0C,
+        0x0E,
+        0x0F,
+        0x0F,
+        0x0E,
+        0x0C,
+        0x08
+    };
 }
 
 inline bool air_cleaner_status() {
@@ -132,111 +152,9 @@ inline bool paddle_status() {
     return !digitalRead(pins::inputs::PADDLE);
 }
 
-inline void setOutput(OuputsPins pin, bool value) {
+inline void setOutput(OutputPins pin, bool value) {
     digitalWrite(pin, value);
 }
-
-inline MenuKey get_menu_key() {
-    if(!digitalRead(pins::inputs::MENU_UP))
-        return MenuKey::UP;
-    if(!digitalRead(pins::inputs::MENU_DOWN))
-        return MenuKey::DOWN;
-    // if(!digitalRead(pins::inputs::MENU_ENTER))
-    //     return MenuKey::ENTER;
-    if(!digitalRead(pins::inputs::MENU_NEXT))
-        return MenuKey::NEXT;
-    return MenuKey::NO_KEY;
-}
-
-void update_display() {
-    using namespace pins::controls;
-    float* selected;
-    // print("next", {0, 0}, true, 150);
-    if(menu == 2) {
-        std::vector<String> data = {"X", "T", "C", "E", "L", "H", "K", "D", "U", "O", "S", "Z", "P", "A", "M", " "};
-        String akbar = "";
-        akbar += String(!digitalRead(pins::inputs::PADDLE));
-        akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER));
-        akbar += String(!digitalRead(pins::inputs::PHASE_CONTROL));
-        akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH));
-        akbar += String(!digitalRead(pins::inputs::LOWLEVEL_MICTORSWITCH));
-        akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_MICTORSWITCH));
-        akbar += String(!digitalRead(pins::inputs::AIR_CLEANER_BUTTON));
-        akbar += String(!digitalRead(pins::inputs::PUMP_DOWN));
-        akbar += String(!digitalRead(pins::inputs::PUMP_UP));
-        akbar += String(!digitalRead(pins::inputs::MOTOR_STOP));
-        akbar += String(!digitalRead(pins::inputs::MOTOR_START));
-        akbar += String(!digitalRead(pins::inputs::AUTO_SELECTOR_AUTOMATIC));
-        akbar += String(!digitalRead(pins::inputs::AUTO_SELECTOR_PADDLE));
-        akbar += String(!digitalRead(pins::inputs::MAIN_SELECTOR_AUTOMATIC));
-        akbar += String(!digitalRead(pins::inputs::MAIN_SELECTOR_MANUAL));
-        if(akbar != status) {
-            display->clear();
-            for(uint8_t i = 0; i < data.size(); i++) {
-                print(data[i], {i, 0}, false);
-            }
-            print(akbar, {0, 1}, false);
-            status = akbar;
-        }
-    } else if(menu == 3) {
-        print("UNIT:" + String(unit_motor_status() ? "ON " : "OFF"), {0, 0}, false);
-        print("AIR:" + String(air_cleaner_status() ? "ON " : "OFF"), {9, 0}, false);
-        print("UP:" + String(pump_up_status() ? "ON " : "OFF"), {0, 1}, false);
-        print("DOWN:" + String(pump_down_status() ? "ON " : "OFF"), {8, 1}, false);
-    } else if(menu == 4) {
-        selected = &MICROSWITCH_TIMER;
-        print("Highlevel Timer:", {0, 0}, false);
-        print(*selected, {0, 1}, false, 35);
-    } else if(menu == 5) {
-        selected = &AIR_CLEANER_TIMER;
-        print("Cleaning Time:", {0, 0}, false);
-        print(*selected, {0, 1}, false, 35);
-    } else if(menu == 1) {
-        display->setCursor(1, 0);
-        display->print("Sanat Gostaran");
-        display->setCursor(0, 1);
-        display->print("Ph: 09133088089");
-    }
-}
-
-//
-int calculateSpace(String str) {return ((16 - str.length()) / 2);}
-
-void loading() {
-    display->setCursor(2, 1); 
-    display->write(specialCharacters::LOADING_START);
-    for(uint8_t col = 3; col < 13; col++) {
-        display->setCursor(col, 1);
-        display->write(specialCharacters::LOADING_MIDDLE);
-    }
-    display->write(specialCharacters::LOADING_END);
-    makeDelay();
-    display->setCursor(2, 1);
-    display->write(specialCharacters::LOADING_START_FILLED);
-    for(uint8_t col = 3; col < 13; col++) {
-        makeDelay();
-        display->setCursor(col, 1);
-        display->write(specialCharacters::LOADING_MIDDLE_FILLED);
-    }
-    makeDelay();
-    display->write(specialCharacters::LOADING_END_FILLED);
-    makeDelay();
-};
-//
-void makeDelay() {
-    delay(100);
-    ulong* rand_input = new ulong(random(0, 750));
-    delay(*rand_input);
-    delete rand_input;
-};
-
-void stage(String str) {
-    display->clear();
-    uint8_t space = calculateSpace(str);
-    display->setCursor(space, 0);
-    display->print(str);
-    loading();
-};
 
 inline String set_status() {
     using namespace pins;
@@ -266,6 +184,75 @@ inline String set_status() {
     return controls::status;
 }
 
+char readKeypad() {
+
+    if(!digitalRead(pins::inputs::KEYPAD_DAV)) {
+        pins::controls::keyValue = '\0';
+        if(powerSaver) {
+            return checkForPowerSaver(pins::controls::keyValue);
+        } else {
+            return pins::controls::keyValue;
+        }
+    }
+
+    // Read the data pins
+    uint8_t data = (digitalRead(pins::inputs::KEYPAD_DATA_D) << 3) | 
+                   (digitalRead(pins::inputs::KEYPAD_DATA_C) << 2) | 
+                   (digitalRead(pins::inputs::KEYPAD_DATA_B) << 1) | 
+                    digitalRead(pins::inputs::KEYPAD_DATA_A);
+    
+    // Map the binary value to corresponding characters
+    switch (data) {
+        case 0b0000: pins::controls::keyValue = '1'; break;
+        case 0b0001: pins::controls::keyValue = '2'; break;
+        case 0b0010: pins::controls::keyValue = '3'; break;
+        case 0b0011: pins::controls::keyValue = 'A'; break;
+        case 0b0100: pins::controls::keyValue = '4'; break;
+        case 0b0101: pins::controls::keyValue = '5'; break;
+        case 0b0110: pins::controls::keyValue = '6'; break;
+        case 0b0111: pins::controls::keyValue = 'B'; break;
+        case 0b1000: pins::controls::keyValue = '7'; break;
+        case 0b1001: pins::controls::keyValue = '8'; break;
+        case 0b1010: pins::controls::keyValue = '9'; break;
+        case 0b1011: pins::controls::keyValue = 'C'; break;
+        case 0b1100: pins::controls::keyValue = '*'; break;
+        case 0b1101: pins::controls::keyValue = '0'; break;
+        case 0b1110: pins::controls::keyValue = '#'; break;
+        case 0b1111: pins::controls::keyValue = 'D'; break;
+        default: pins::controls::keyValue = '\0'; // No valid key pressed
+    }
+
+    if (pins::controls::keyValue == 'D' && !digitalRead(pins::inputs::KEYPAD_DAV)) {
+        pins::controls::keyValue = '\0';
+    }
+
+    if(powerSaver) {
+        // 1- Backlight is one: returns the key
+        // 2- Backlight is off: returns '\0' and turns on the backlight
+        return checkForPowerSaver(pins::controls::keyValue);
+    } else {
+        return pins::controls::keyValue;
+    }
+}
+
+char checkForPowerSaver(char key) {
+    if(key != '\0') {
+        lastActionTime = millis();
+        if(!powerSaverStatus) {
+            powerSaverStatus = true;
+            display->backlight();
+            return '\0';
+        } else {
+            return key;
+        }
+    } else {
+        if(millis() - lastActionTime >= 30000) {
+            powerSaverStatus = false;
+            display->noBacklight();
+        }
+        return '\0';
+    }
+}
 
 inline uint32_t convert_string_to_decimal(String status) {
     uint32_t value = 0;
@@ -307,7 +294,7 @@ void task2(void* pvParameters) {
                 yield();
             }
             setOutput(PUMP_UP_OUTPUT, LOW);
-            while(main_selector_status() == MainSelectorStatus::MANUAL && pump_down_button_status() && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH) && unit_motor_status()) {
+            while(main_selector_status() == MainSelectorStatus::MANUAL && pump_down_button_status() && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::SENSOR) && unit_motor_status()) {
                 setOutput(PUMP_DOWN_OUTPUT, HIGH);
                 yield();
             }
@@ -324,7 +311,7 @@ void task2(void* pvParameters) {
                 setOutput(PUMP_UP_OUTPUT, LOW);
                 if(paddle_status()) {
                     pins::controls::TIMER_TRIGERED = false;
-                    while(automatic_selector_status() == AutomaticSelectorStatus::PADDLE && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH) && unit_motor_status()) {
+                    while(automatic_selector_status() == AutomaticSelectorStatus::PADDLE && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::SENSOR) && unit_motor_status()) {
                         setOutput(PUMP_DOWN_OUTPUT, HIGH);
                         yield();
                     }
@@ -379,7 +366,7 @@ void task2(void* pvParameters) {
                 }
                 setOutput(PUMP_UP_OUTPUT, LOW);
                 pins::controls::TIMER_TRIGERED = false;
-                while(automatic_selector_status() == AutomaticSelectorStatus::AUTO_AUTO && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH) &&unit_motor_status()) {
+                while(automatic_selector_status() == AutomaticSelectorStatus::AUTO_AUTO && !lowlevel_microswitch_status() && !digitalRead(pins::inputs::SENSOR) &&unit_motor_status()) {
                     setOutput(PUMP_DOWN_OUTPUT, HIGH);
                     yield();
                 }
@@ -402,135 +389,46 @@ void task2(void* pvParameters) {
 }
 
 void task3(void* pvParameters) {
-    using namespace pins::controls;
-    float* selected;
     while(true) {
-        // print("task3", {0, 0}, true, 150);
-        if(menu == 4) {
-            selected = &MICROSWITCH_TIMER;
-        }
-        if(menu == 5) {
-            selected = &AIR_CLEANER_TIMER;
-        }
-        if(get_menu_key() == MenuKey::UP && (menu == 5 || menu == 4)) {
-            // print("up", {0, 0}, true, 150);
-            display->clear();
-            status = "";
-            *selected += .1;
-            controlVariable(*selected, 0.1, 9.9);
-            // update_display();
-        }
-        if(get_menu_key() == MenuKey::DOWN && (menu == 5 || menu == 4)) {
-            // print("down", {0, 0}, true, 150);
-            display->clear();
-            status = "";
-            *selected -= .1;
-            controlVariable(*selected, 0.1, 9.9);
-            // update_display();
-        }
-        if(get_menu_key() == MenuKey::NEXT) {
-            // print("next", {0, 0}, true, 150);
-            display->clear();
-            status = "";
-            uint32_t current = millis();
-            while(get_menu_key() == MenuKey::NEXT) {
-                if(millis() - current >= 3000) {
-                    writeByte(0x1000, int(pins::controls::AIR_CLEANER_TIMER * 10));
-                    writeByte(0x2000, int(pins::controls::MICROSWITCH_TIMER * 10));
-                    print("   Saved Data   ", {0, 0}, true, 1000);
-                    break;
-                }   
+        char key = readKeypad();
+        menu->check(key);
+        if(newMenu != "none") {
+            delete menu;
+            if(newMenu == "home") {
+                menu = new HomeMenu(*display, {1, 2}, {'A', 'B', 'C'});
+            } else if(newMenu == "about") {
+                menu = new AboutMenu(*display, {1, 2}, {'A', 'B', 'C', 'D'});
+            } else if(newMenu == "list") {
+                menu = new ListMenu(*display, {1, 6}, {'A', 'B', 'C', 'D'});
+            } else if(newMenu == "inputs") {
+                menu = new InputsMenu(*display, {}, {});
+            } else if(newMenu == "outputs") {
+                menu = new OutputsMenu(*display, {}, {});
+            } else if(newMenu == "settings") {
+                menu = new SettingsMenu(*display, {1, 5}, {'A', 'B', 'C', 'D'});
+            } else if(newMenu == "highlevel_timer") {
+                menu = new HTimerMenu(*display, {1, 3}, {'A', 'B', 'C', 'D', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '*'});
+            } else if(newMenu == "aircleaner_timer") {
+                menu = new ATimerMenu(*display, {1, 3}, {'A', 'B', 'C', 'D', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '*'});
             }
-            menu++;
-            controlVariable(menu, 1, 5);
-            // update_display();
+
+            newMenu = "none";
+            menu->display.clear();
+            if(returnCursor) {
+                menu->cursor = returnCursor;
+                returnCursor = 0;
+            }
+            menu->drawMenu();
+            if(pins::controls::change) {
+                saveToEEPROM();
+                pins::controls::change = false;
+                setOutput(OutputPins::UNIT_MOTOR_OUTPUT, HIGH);
+                vTaskDelay(150 / portTICK_PERIOD_MS);
+                setOutput(OutputPins::UNIT_MOTOR_OUTPUT, LOW);
+            }
         }
-        update_display();
-        vTaskDelay(40 / portTICK_PERIOD_MS);
-        // if(get_menu_key() == MenuKey::ENTER) {
-        //     // nothing to do
-        //     // update_display();
-        // }
-        // float* selected = (pins::controls::menu ? &pins::controls::AIR_CLEANER_TIMER : &pins::controls::MICROSWITCH_TIMER);
-        // if(get_menu_key() == MenuKey::UP && *selected < 9.9) {
-        //     *selected += .1;
-        //     update_display();
-        // }
-        // if(get_menu_key() == MenuKey::DOWN && *selected > 0.0) {
-        //     *selected -= .1;
-        //     update_display();
-        // }
-        // if(get_menu_key() == MenuKey::NEXT) {
-        //     uint32_t current = millis();
-        //     while(get_menu_key() == MenuKey::NEXT) {
-        //         if(millis() - current >= 3000) {
-        //             writeByte(0x1000, int(pins::controls::AIR_CLEANER_TIMER * 10));
-        //             writeByte(0x2000, int(pins::controls::MICROSWITCH_TIMER * 10));
-        //             // display->clear();
-        //             // display->setCursor(0, 0);
-        //             // display->print("Save");
-        //             vTaskDelay(1500 / portTICK_PERIOD_MS);
-        //             break;
-        //         }   
-        //     }
-        //     pins::controls::menu = !pins::controls::menu;
-        //     update_display();
-        // }
-        // if(get_menu_key() == MenuKey::ENTER && *selected < 9.9) {
-        //     // nothing to do
-        //     update_display();
-        // }
-
-
-        // Working
-        // String akbar = "00";
-        // akbar += String(!digitalRead(pins::inputs::MAIN_SELECTOR_MANUAL));
-        // akbar += String(!digitalRead(pins::inputs::MAIN_SELECTOR_AUTOMATIC));
-        // akbar += String(!digitalRead(pins::inputs::AUTO_SELECTOR_PADDLE));
-        // akbar += String(!digitalRead(pins::inputs::AUTO_SELECTOR_AUTOMATIC));
-        // akbar += String(!digitalRead(pins::inputs::MOTOR_START));
-        // akbar += String(!digitalRead(pins::inputs::MOTOR_STOP));
-        // akbar += String(!digitalRead(pins::inputs::PUMP_UP));
-        // akbar += String(!digitalRead(pins::inputs::PUMP_DOWN));
-        // akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_MICTORSWITCH));
-        // akbar += String(!digitalRead(pins::inputs::LOWLEVEL_MICTORSWITCH));
-        // akbar += String(!digitalRead(pins::inputs::PHASE_CONTROL));
-        // akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER));
-        // akbar += String(!digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH));
-        // akbar += String(!digitalRead(pins::inputs::PADDLE));
-        // display->setCursor(0, 0);
-        // display->print(digitalRead(pins::outputs::OUTPUT1));
-        // display->print(digitalRead(pins::outputs::OUTPUT2));
-        // display->print(digitalRead(pins::outputs::OUTPUT3));
-        // display->print(digitalRead(pins::outputs::OUTPUT4));
-        // display->setCursor(0, 1);
-        // display->print(akbar);
-        // vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-
-        // akbar += String(digitalRead(pins::inputs::MAIN_SELECTOR_MANUAL));
-        // akbar += String(digitalRead(pins::inputs::MAIN_SELECTOR_AUTOMATIC));
-        // akbar += String(digitalRead(pins::inputs::AUTO_SELECTOR_PADDLE));
-        // akbar += String(digitalRead(pins::inputs::AUTO_SELECTOR_AUTOMATIC));
-        // akbar += String(digitalRead(pins::inputs::MOTOR_START));
-        // akbar += String(digitalRead(pins::inputs::MOTOR_STOP));
-        // akbar += String(digitalRead(pins::inputs::PUMP_UP));
-        // akbar += String(digitalRead(pins::inputs::PUMP_DOWN));
-        // akbar += String(digitalRead(pins::inputs::HIGHLEVEL_MICTORSWITCH));
-        // akbar += String(digitalRead(pins::inputs::LOWLEVEL_MICTORSWITCH));
-        // akbar += String(digitalRead(pins::inputs::PHASE_CONTROL));
-        // akbar += String(digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER));
-        // akbar += String(digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH));
-        // akbar += String(digitalRead(pins::inputs::PADDLE));
-
-        
-
-        // digitalWrite(pins::controls::latch, LOW);
-        // shiftOut(pins::controls::data_pin, pins::controls::clock_pin, LSBFIRST, convert_string_to_decimal(akbar) >> 8);
-        // shiftOut(pins::controls::data_pin, pins::controls::clock_pin, LSBFIRST, convert_string_to_decimal(akbar));
-        // digitalWrite(pins::controls::latch, HIGH);
-        // vTaskDelay(100 / portTICK_PERIOD_MS);
-
+        vTaskDelay(150 / portTICK_PERIOD_MS);
+        while(key != '\0' && readKeypad() == key){}
     }
 }
 
@@ -554,57 +452,14 @@ void air_cleaner(void* pvParameters) {
     }
 }
 
-void writeByte(uint32_t address, uint8_t value) {
-    uint8_t r = readByte(address);
-    if(r == value) {
-        return;
-    }
-    eraseSector(address);
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
-
-    SPI.transfer(0x06);  // Write Enable command
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    delayMicroseconds(10);
-
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
-    SPI.transfer(0x02);  // Page Program command
-    SPI.transfer((address >> 16) & 0xFF);  // Send the address bytes
-    SPI.transfer((address >> 8) & 0xFF);
-    SPI.transfer(address & 0xFF);
-
-    SPI.transfer(value);
-
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    delay(5);  // Page program time
+void saveToEEPROM() {
+    writeByte(0x1000, int(pins::controls::AIR_CLEANER_TIMER * 10)); 
+    writeByte(0x2000, int(pins::controls::MICROSWITCH_TIMER * 10)); 
+    writeByte(0x3000, uint8_t(powerSaver)); 
 }
 
-uint8_t readByte(uint32_t address) {
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
-
-    SPI.transfer(0x03);  // Read command
-    SPI.transfer((address >> 16) & 0xFF);  // Send the address bytes
-    SPI.transfer((address >> 8) & 0xFF);
-    SPI.transfer(address & 0xFF);
-
-    uint8_t readValue = SPI.transfer(0x00);  // Send dummy byte to read data
-
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    return readValue;
-}
-
-void eraseSector(uint32_t sectorAddress) {
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
-
-    SPI.transfer(0x06);  // Write Enable command
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    delayMicroseconds(10);
-
-    digitalWrite(pins::controls::chipSelectPin, LOW);  // Select the chip
-    SPI.transfer(0x20);  // Sector Erase command
-    SPI.transfer((sectorAddress >> 16) & 0xFF);  // Send the sector address bytes
-    SPI.transfer((sectorAddress >> 8) & 0xFF);
-    SPI.transfer(sectorAddress & 0xFF);
-
-    digitalWrite(pins::controls::chipSelectPin, HIGH);  // Deselect the chip
-    delay(100);  // Sector erase time
+void readFromEEPROM() {
+    pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;
+    pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
+    powerSaver = bool(readByte(0x3000));
 }

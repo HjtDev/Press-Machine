@@ -10,7 +10,7 @@ void setup() {
     pinMode(pins::inputs::MAIN_SELECTOR_AUTOMATIC, INPUT);
     pinMode(pins::inputs::AUTO_SELECTOR_PADDLE, INPUT);
     pinMode(pins::inputs::AUTO_SELECTOR_AUTOMATIC, INPUT);
-    pinMode(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH, INPUT);
+    pinMode(pins::inputs::SENSOR, INPUT);
     pinMode(pins::inputs::HIGHLEVEL_SELECTOR_TIMER, INPUT);
     pinMode(pins::inputs::MOTOR_START, INPUT);
     pinMode(pins::inputs::MOTOR_STOP, INPUT);
@@ -21,53 +21,43 @@ void setup() {
     pinMode(pins::inputs::PHASE_CONTROL, INPUT);
     pinMode(pins::inputs::PADDLE, INPUT);
     pinMode(pins::inputs::AIR_CLEANER_BUTTON, INPUT);
-    pinMode(pins::inputs::MENU_UP, INPUT);
-    pinMode(pins::inputs::MENU_DOWN, INPUT);
 
-    pinMode(pins::inputs::NTC_INPUT, INPUT_ANALOG);
-    analogReadResolution(12);
+    pinMode(pins::inputs::KEYPAD_DAV, INPUT);
 
-    // pinMode(pins::inputs::MENU_ENTER, INPUT);
-    pinMode(pins::inputs::MENU_NEXT, INPUT);
-    pinMode(pins::outputs::BUZZER, OUTPUT);
+    pinMode(pins::inputs::KEYPAD_DATA_A, INPUT);
+    pinMode(pins::inputs::KEYPAD_DATA_B, INPUT);
+    pinMode(pins::inputs::KEYPAD_DATA_C, INPUT);
+    pinMode(pins::inputs::KEYPAD_DATA_D, INPUT);
+
     pinMode(pins::outputs::OUTPUT1, OUTPUT);
     pinMode(pins::outputs::OUTPUT2, OUTPUT);
     pinMode(pins::outputs::OUTPUT3, OUTPUT);
     pinMode(pins::outputs::OUTPUT4, OUTPUT);
-    pinMode(pins::outputs::ADC_OUTPUT, OUTPUT);
     display->init();
     display->backlight();
+    display->createChar(specialCharacters::SELECTOR, Icons::selector);
+    display->createChar(specialCharacters::FILLED_SELECTOR, Icons::selector_filled);
     display->createChar(specialCharacters::LOADING_START, Icons::LOADING_START);
     display->createChar(specialCharacters::LOADING_START_FILLED, Icons::LOADING_START_FILLED);
     display->createChar(specialCharacters::LOADING_END, Icons::LOADING_END);
     display->createChar(specialCharacters::LOADING_END_FILLED, Icons::LOADING_END_FILLED);
-    // print("Mr.Fotohi", {3, 0}, true, 1);
-    // print("ph: 09133088089", {0, 1}, false, 1000);
-    pins::controls::AIR_CLEANER_TIMER = float(readByte(0x1000)) / 10;
-    pins::controls::MICROSWITCH_TIMER = float(readByte(0x2000)) / 10;
-    digitalWrite(OuputsPins::ADC_OUTPUT, HIGH);
+    display->createChar(specialCharacters::LOADING_MIDDLE, Icons::LOADING_MIDDLE);
+    display->createChar(specialCharacters::LOADING_MIDDLE_FILLED, Icons::LOADING_MIDDLE_FILLED);
+    g_cursor_range.push_back(1);
+    g_cursor_range.push_back(2);
+    g_valid_keys.push_back('A');
+    g_valid_keys.push_back('B');
+    g_valid_keys.push_back('C');
+    menu = new HomeMenu(*display, g_cursor_range, g_valid_keys);
+    menu->drawMenu();
+    readFromEEPROM();
     xTaskCreate(task1, "UNIT Motor with control phase", 512, NULL, 1, NULL);
-    xTaskCreate(task2, "Inputs, Pumps and AirCleaner", 1024, NULL, 1, NULL);
-    xTaskCreate(task3, "Menu & Shift Register", 512, NULL, 1, NULL);
+    xTaskCreate(task2, "Main Inputs Logic", 1024, NULL, 1, NULL);
+    xTaskCreate(task3, "Menu", 512, NULL, 1, NULL);
     xTaskCreate(air_cleaner, "Air Cleaner", 256, NULL, 1, NULL);
     vTaskStartScheduler();
 }
 
-void loop() {
-    
-    // display->print(String(digitalRead(pins::inputs::MAIN_SELECTOR_MANUAL)));
-    // display->print(String(digitalRead(pins::inputs::MAIN_SELECTOR_AUTOMATIC)));
-    // display->print(String(digitalRead(pins::inputs::AUTO_SELECTOR_PADDLE)));
-    // display->print(String(digitalRead(pins::inputs::AUTO_SELECTOR_AUTOMATIC)));
-    // display->print(String(digitalRead(pins::inputs::MOTOR_START)));
-    // display->print(String(digitalRead(pins::inputs::MOTOR_STOP)));
-    // display->print(String(digitalRead(pins::inputs::PUMP_UP)));
-    // display->print(String(digitalRead(pins::inputs::PUMP_DOWN)));
-    // display->print(String(digitalRead(pins::inputs::HIGHLEVEL_MICTORSWITCH)));
-    // display->print(String(digitalRead(pins::inputs::LOWLEVEL_MICTORSWITCH)));
-    // display->print(String(digitalRead(pins::inputs::PHASE_CONTROL)));
-    // display->print(String(digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_TIMER)));
-    // display->print(String(digitalRead(pins::inputs::HIGHLEVEL_SELECTOR_MICROSWITCH)));
-    // display->print(String(digitalRead(pins::inputs::PADDLE)));
+void loop() {     
     yield();
 }
