@@ -7,6 +7,7 @@ float pins::controls::MICROSWITCH_TIMER = 5.0;
 bool pins::controls::TIMER_TRIGERED = false;
 bool pins::controls::air_cleaner = false;
 char pins::controls::keyValue = '\0';
+bool pins::controls::change = false;
 LiquidCrystal_I2C* display = new LiquidCrystal_I2C(0x27, 16, 2);
 
 namespace Icons {
@@ -404,7 +405,7 @@ void task3(void* pvParameters) {
             } else if(newMenu == "outputs") {
                 menu = new OutputsMenu(*display, {}, {});
             } else if(newMenu == "settings") {
-                menu = new SettingsMenu(*display, {1, 6}, {'A', 'B', 'C', 'D'});
+                menu = new SettingsMenu(*display, {1, 5}, {'A', 'B', 'C', 'D'});
             } else if(newMenu == "highlevel_timer") {
                 menu = new HTimerMenu(*display, {1, 3}, {'A', 'B', 'C', 'D', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '*'});
             } else if(newMenu == "aircleaner_timer") {
@@ -418,6 +419,13 @@ void task3(void* pvParameters) {
                 returnCursor = 0;
             }
             menu->drawMenu();
+            if(pins::controls::change) {
+                saveToEEPROM();
+                pins::controls::change = false;
+                setOutput(OutputPins::UNIT_MOTOR_OUTPUT, HIGH);
+                vTaskDelay(150 / portTICK_PERIOD_MS);
+                setOutput(OutputPins::UNIT_MOTOR_OUTPUT, LOW);
+            }
         }
         vTaskDelay(150 / portTICK_PERIOD_MS);
         while(key != '\0' && readKeypad() == key){}
