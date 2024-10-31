@@ -51,10 +51,10 @@ void setup() {
     menu = new HomeMenu(*display, g_cursor_range, g_valid_keys);
     menu->drawMenu();
     readFromEEPROM();
-    // xTaskCreate(task1, "UNIT Motor with control phase", 512, NULL, 1, NULL);
-    // xTaskCreate(task2, "Inputs, Pumps and AirCleaner", 1024, NULL, 1, NULL);
-    xTaskCreate(task3, "Menu & Shift Register", 512, NULL, 1, NULL);
-    // xTaskCreate(air_cleaner, "Air Cleaner", 256, NULL, 1, NULL);
+    xTaskCreate(task1, "UNIT Motor with control phase", 512, NULL, 1, NULL);
+    xTaskCreate(task2, "Main Inputs Logic", 1024, NULL, 1, NULL);
+    xTaskCreate(task3, "Menu", 512, NULL, 1, NULL);
+    xTaskCreate(air_cleaner, "Air Cleaner", 256, NULL, 1, NULL);
     vTaskStartScheduler();
 }
 
