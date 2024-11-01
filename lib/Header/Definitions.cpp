@@ -422,9 +422,6 @@ void task3(void* pvParameters) {
             if(pins::controls::change) {
                 saveToEEPROM();
                 pins::controls::change = false;
-                setOutput(OutputPins::UNIT_MOTOR_OUTPUT, HIGH);
-                vTaskDelay(150 / portTICK_PERIOD_MS);
-                setOutput(OutputPins::UNIT_MOTOR_OUTPUT, LOW);
             }
         }
         vTaskDelay(150 / portTICK_PERIOD_MS);
