@@ -265,7 +265,7 @@ void ListMenu::drawMenu() {
 // Start Inputs Menu
 
 InputsMenu::InputsMenu(LiquidCrystal_I2C lcd, std::vector<uint8_t> cursor_range, std::vector<char> validKeysList)
-    : BaseMenu(lcd, cursor_range, validKeysList) {}
+    : BaseMenu(lcd, cursor_range, validKeysList) {status = "0";}
 
 void InputsMenu::check(char key) {
 	if (key != '\0') {
